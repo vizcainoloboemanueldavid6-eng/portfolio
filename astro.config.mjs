@@ -25,7 +25,10 @@ const site = (
   (env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${env.VERCEL_PROJECT_PRODUCTION_URL}` : '') ||
   (env.NETLIFY === 'true' && env.URL ? env.URL : '') ||
   FALLBACK_SITE
-).replace(/\/+$/, '');
+)
+  // A value pasted or piped into a host's settings often carries a stray newline.
+  .trim()
+  .replace(/\/+$/, '');
 
 export default defineConfig({
   site,
