@@ -1,0 +1,19 @@
+# `vercel` / `vercel --prod` from this folder uploads the source and Vercel builds it.
+# Unlike a Git deploy, the CLI does not read .gitignore, so keep local files out here.
+
+# Local environment files: a copied .env would override the production domain.
+.env
+.env.*
+!.env.example
+
+# Build output and caches (Vercel rebuilds them)
+dist/
+.astro/
+
+# Local test and audit artifacts, and repository-only docs
+lighthouse/
+test-results/
+playwright-report/
+docs/
+*.log
+*.zip
