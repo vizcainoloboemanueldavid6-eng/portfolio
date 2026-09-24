@@ -1,0 +1,41 @@
+{
+  "name": "mateobuilds-portfolio",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bilingual (EN/ES) portfolio site for a freelance web developer who sells on Fiverr. Astro, TypeScript, Tailwind CSS.",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev --port 4330",
+    "build": "astro build",
+    "preview": "astro preview --port 4331",
+    "check": "astro check",
+    "images": "node scripts/images.mjs",
+    "placeholders": "node scripts/placeholders.mjs",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "3.7.4",
+    "@fontsource-variable/inter": "5.3.0",
+    "@fontsource-variable/space-grotesk": "5.3.0",
+    "@fontsource/space-grotesk": "5.3.0",
+    "@tailwindcss/vite": "4.3.3",
+    "astro": "7.3.5",
+    "opentype.js": "1.3.4",
+    "sharp": "0.35.4",
+    "simple-icons": "16.32.0",
+    "tailwindcss": "4.3.3"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.10",
+    "@types/node": "24.13.6",
+    "lighthouse": "13.5.0",
+    "playwright": "1.57.0",
+    "typescript": "6.0.3"
+  },
+  "allowScripts": {
+    "esbuild": true
+  }
+}

@@ -1,0 +1,29 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+.astro/
+.vercel/
+.netlify/
+
+# environment variables (the example file is committed on purpose)
+.env*
+!.env.example
+
+# test and audit artifacts
+lighthouse/
+test-results/
+playwright-report/
+*.log
+npm-debug.log*
+
+# release archives
+*.zip
+
+# editors and OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
