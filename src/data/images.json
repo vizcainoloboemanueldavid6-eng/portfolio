@@ -1,0 +1,92 @@
+{
+  "/projects/bella-cucina/booking": {
+    "width": 1280,
+    "height": 800,
+    "widths": [
+      640,
+      960,
+      1280
+    ]
+  },
+  "/projects/bella-cucina/cover": {
+    "width": 1280,
+    "height": 800,
+    "widths": [
+      640,
+      960,
+      1280
+    ]
+  },
+  "/projects/bella-cucina/gallery": {
+    "width": 1280,
+    "height": 800,
+    "widths": [
+      640,
+      960,
+      1280
+    ]
+  },
+  "/projects/bella-cucina/menu": {
+    "width": 1280,
+    "height": 800,
+    "widths": [
+      640,
+      960,
+      1280
+    ]
+  },
+  "/projects/bella-cucina/mobile": {
+    "width": 1280,
+    "height": 800,
+    "widths": [
+      640,
+      960,
+      1280
+    ]
+  },
+  "/projects/fitcoach-pro/article": {
+    "width": 1280,
+    "height": 800,
+    "widths": [
+      640,
+      960,
+      1280
+    ]
+  },
+  "/projects/fitcoach-pro/blog": {
+    "width": 1280,
+    "height": 800,
+    "widths": [
+      640,
+      960,
+      1280
+    ]
+  },
+  "/projects/fitcoach-pro/cover": {
+    "width": 1280,
+    "height": 800,
+    "widths": [
+      640,
+      960,
+      1280
+    ]
+  },
+  "/projects/fitcoach-pro/mobile": {
+    "width": 1280,
+    "height": 800,
+    "widths": [
+      640,
+      960,
+      1280
+    ]
+  },
+  "/projects/fitcoach-pro/programs": {
+    "width": 1280,
+    "height": 800,
+    "widths": [
+      640,
+      960,
+      1280
+    ]
+  }
+}
