@@ -12,7 +12,7 @@ const { lang } = Astro.props;
 const t = useTranslations(lang);
 ---
 
-<section id="faq" class="container-page scroll-mt-24 py-16 md:py-24" aria-labelledby="faq-title">
+<section id="faq" class="container-page py-16 md:py-24" aria-labelledby="faq-title">
   <div class="grid gap-12 lg:grid-cols-[1fr_1.6fr]">
     <SectionHeading id="faq-title" eyebrow={t.faq.eyebrow} title={t.faq.title} />
 

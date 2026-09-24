@@ -57,7 +57,32 @@ const switchTo = alternates?.[otherLang] ?? (otherLang === 'en' ? '/' : '/es/');
     <Footer lang={lang} switchTo={switchTo} isHome={isHome} />
 
     <script>
-      // Keep the section you were reading when switching language on the home
+      /**
+       * The section being read right now: the last one whose top has passed a
+       * line 30 % down the visible area. The URL's #hash is not enough, because
+       * it keeps the last in-page jump after the visitor scrolls elsewhere. At
+       * the very bottom of the page the last sections cannot reach that line, so
+       * a #hash section that is on screen wins there.
+       */
+      function currentSection(): string | null {
+        const sections = [...document.querySelectorAll<HTMLElement>('main section[id]')];
+        const headerBottom = document.querySelector('header')?.getBoundingClientRect().bottom ?? 0;
+        const line = headerBottom + (window.innerHeight - headerBottom) * 0.3;
+        let current: HTMLElement | null = null;
+        for (const section of sections) {
+          if (section.getBoundingClientRect().top <= line) current = section;
+        }
+        const atBottom =
+          window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2;
+        const hashed = sections.find((s) => `#${s.id}` === decodeURIComponent(window.location.hash));
+        if (atBottom && hashed) {
+          const box = hashed.getBoundingClientRect();
+          if (box.top < window.innerHeight && box.bottom > headerBottom) current = hashed;
+        }
+        return current?.id ?? null;
+      }
+
+      // Keep the section you are reading when switching language on the home
       // page: /#faq → /es/#faq (section ids are the same in both languages).
       // Capture phase, so the href is updated before the router reads it.
       document.addEventListener(
@@ -66,15 +91,35 @@ const switchTo = alternates?.[otherLang] ?? (otherLang === 'en' ? '/' : '/es/');
           const link = (event.target as Element | null)?.closest<HTMLAnchorElement>(
             'a[data-lang-switch]',
           );
-          if (!link || !window.location.hash) return;
-          const target = new URL(link.href);
-          if (target.hash) return;
+          if (!link) return;
+          // The server-rendered address, kept in case this link was rewritten before.
+          const base = (link.dataset.baseHref ??= link.getAttribute('href') ?? '/');
+          const target = new URL(base, window.location.href);
           const here = window.location.pathname.replace(/^\/es(?=\/)/, '');
           const there = target.pathname.replace(/^\/es(?=\/)/, '');
-          if (here === there) link.href = `${target.pathname}${window.location.hash}`;
+          const section = here === there ? currentSection() : null;
+          link.href = section ? `${target.pathname}#${section}` : target.pathname;
         },
         true,
       );
+
+      // Astro's router ignores history entries it did not create (a #hash typed
+      // into the address bar has history.state === null). Going Back to one of
+      // those from another page would change the URL but leave the other page on
+      // screen, so load it for real. The router's own hash steps briefly have a
+      // null state too, so this looks again once they are done.
+      let shownPath = window.location.pathname;
+      document.addEventListener('astro:before-swap', (event) => {
+        shownPath = event.to.pathname;
+      });
+      window.addEventListener('popstate', (event) => {
+        if (event.state !== null) return;
+        setTimeout(() => {
+          if (history.state === null && window.location.pathname !== shownPath) {
+            window.location.reload();
+          }
+        });
+      });
     </script>
   </body>
 </html>

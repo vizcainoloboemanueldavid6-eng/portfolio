@@ -10,6 +10,13 @@ interface Props {
   projects: Project[];
 }
 
+/*
+ * Without JavaScript the filter cannot work, so the <noscript> rule below hides it and every
+ * project is simply listed. With JavaScript the buttons are in the page from the first paint: the
+ * space they take is already there when a link to a section further down (#faq, #contact)
+ * scrolls, so the page does not shift under that scroll. (Astro's router removes <noscript> from
+ * the pages it swaps in, so the rule never applies after a client-side navigation.)
+ */
 const { lang, projects } = Astro.props;
 const t = useTranslations(lang);
 const typeOrder: ProjectType[] = ['website', 'chrome-extension', 'web-app'];
@@ -18,11 +25,11 @@ const filters = typeOrder
   .filter((filter) => filter.count > 0);
 ---
 
-<section id="work" class="container-page scroll-mt-24 py-16 md:py-24" aria-labelledby="work-title">
+<section id="work" class="container-page py-16 md:py-24" aria-labelledby="work-title">
   <SectionHeading id="work-title" eyebrow={t.work.eyebrow} title={t.work.title} intro={t.work.intro} />
 
-  <!-- Hidden until the script below runs: without JavaScript every project is simply shown. -->
-  <div class="mt-10 flex flex-wrap gap-2" role="group" aria-label={t.work.filterLabel} data-filter-group hidden>
+  <noscript><style is:inline>[data-filter-group]{display:none}</style></noscript>
+  <div class="mt-10 flex flex-wrap gap-2" role="group" aria-label={t.work.filterLabel} data-filter-group>
     <button type="button" class="filter-btn" aria-pressed="true" data-filter="all">
       {t.work.all}
       <span class="filter-count" aria-hidden="true">{projects.length}</span>
@@ -96,8 +103,9 @@ const filters = typeOrder
 <script>
   /**
    * Filter by project type. Progressive enhancement: the buttons are native
-   * <button>s with aria-pressed (so Tab, Enter and Space just work), they only
-   * appear once this script runs, and the result count is announced politely.
+   * <button>s with aria-pressed (so Tab, Enter and Space just work), they are
+   * hidden when JavaScript is off (see the <noscript> above), and the result
+   * count is announced politely.
    */
   function setupFilters() {
     const group = document.querySelector<HTMLElement>('[data-filter-group]');
@@ -134,8 +142,6 @@ const filters = typeOrder
         apply(filter);
       }
     });
-
-    group.hidden = false;
   }
 
   document.addEventListener('astro:page-load', setupFilters);

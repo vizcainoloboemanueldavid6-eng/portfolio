@@ -66,7 +66,20 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    scroll-padding-top: 5.5rem;
+  }
+
+  /*
+   * The sticky header covers the top 4rem. Whatever the page scrolls to (a
+   * #section, or a link or button that receives focus) stops 4.5rem from the
+   * top, just below it. This is the only scroll offset: sections carry their
+   * own top padding, so nothing else is added.
+   * It is a scroll-margin on the content, not a scroll-padding on <html>,
+   * because a page-wide scroll-padding also applies to the header's own
+   * links: focusing one of them (a click or Tab) made the browser "reveal" it
+   * by scrolling the page up half a screen.
+   */
+  :where(main, footer) * {
+    scroll-margin-top: 4.5rem;
   }
 
   @media (prefers-reduced-motion: no-preference) {
