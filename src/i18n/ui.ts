@@ -248,7 +248,7 @@ export const ui: Record<Lang, UiStrings> = {
       eyebrow: 'Work',
       title: 'Selected projects',
       intro:
-        'Projects built end to end, from the first sketch to deployment. Open any of them for the full case study.',
+        'Projects designed and built end to end. Open any of them for the full case study, from the problem to the stack.',
       filterLabel: 'Filter projects by type',
       all: 'All',
       filters: {
@@ -476,7 +476,7 @@ export const ui: Record<Lang, UiStrings> = {
       eyebrow: 'Proyectos',
       title: 'Proyectos seleccionados',
       intro:
-        'Proyectos hechos de principio a fin, del primer boceto al despliegue. Abre cualquiera para ver el caso de estudio completo.',
+        'Proyectos diseñados y desarrollados de principio a fin. Abre cualquiera para ver el caso de estudio completo, del problema a la tecnología.',
       filterLabel: 'Filtrar proyectos por tipo',
       all: 'Todos',
       filters: {

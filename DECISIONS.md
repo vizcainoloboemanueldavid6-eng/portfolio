@@ -86,6 +86,9 @@ They were being built in parallel, so their case studies describe what their spe
 (features, permissions, architecture), in the present tense, without invented metrics. The two
 sibling projects that already shipped quote their own measured Lighthouse numbers from their
 READMEs. Bella Cucina and FitCoach Pro are fictional businesses, and their case studies say so.
+Shared copy does not overstate either: the Work intro says the projects were "designed and built
+end to end" and no longer "from the first sketch to deployment", because three of the five are
+not deployed yet (their pages say "Launching soon").
 
 ### A `#` link is a disabled "Coming soon" state, not a dead link
 
