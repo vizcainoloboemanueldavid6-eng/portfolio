@@ -36,8 +36,8 @@ it needs to verify its binary.
 ### No ESLint or Prettier
 
 The acceptance criteria are `npm run build` and `astro check`, and both are clean. For a static
-site with almost no JavaScript, `npm run checks` (338 assertions in a real browser) catches far
-more than a linter would.
+site with almost no JavaScript, `npm run checks` (over 300 assertions in a real browser) catches
+far more than a linter would.
 
 ---
 
@@ -285,6 +285,14 @@ they exist.
 Fiverr's terms keep orders and payments on the platform, so every primary call to action goes to
 Fiverr, and email and GitHub are secondary links. The spec says so explicitly; a check asserts
 there is no `<form>` on the home page.
+
+### Host configuration ships with the code
+
+`vercel.json` turns on `trailingSlash: true`, so `/projects/tabzen` answers with a permanent
+redirect to `/projects/tabzen/`, the address the canonical tags and the sitemap use, instead of
+serving the same page at two URLs. Both `vercel.json` and `netlify.toml` mark the content-hashed
+files in `/_astro/` as immutable. `netlify.toml` also sets the build command and the `dist`
+folder, so importing the repository needs no manual settings on either host.
 
 ### How the numbers were measured
 
