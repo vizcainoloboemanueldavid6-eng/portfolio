@@ -1,0 +1,142 @@
+---
+import type { Lang, ProjectType } from '../../i18n/ui';
+import { useTranslations } from '../../i18n/utils';
+import type { Project } from '../../lib/projects';
+import SectionHeading from '../SectionHeading.astro';
+import ProjectCard from './ProjectCard.astro';
+
+interface Props {
+  lang: Lang;
+  projects: Project[];
+}
+
+const { lang, projects } = Astro.props;
+const t = useTranslations(lang);
+const typeOrder: ProjectType[] = ['website', 'chrome-extension', 'web-app'];
+const filters = typeOrder
+  .map((type) => ({ type, count: projects.filter((p) => p.data.type === type).length }))
+  .filter((filter) => filter.count > 0);
+---
+
+<section id="work" class="container-page scroll-mt-24 py-16 md:py-24" aria-labelledby="work-title">
+  <SectionHeading id="work-title" eyebrow={t.work.eyebrow} title={t.work.title} intro={t.work.intro} />
+
+  <!-- Hidden until the script below runs: without JavaScript every project is simply shown. -->
+  <div class="mt-10 flex flex-wrap gap-2" role="group" aria-label={t.work.filterLabel} data-filter-group hidden>
+    <button type="button" class="filter-btn" aria-pressed="true" data-filter="all">
+      {t.work.all}
+      <span class="filter-count" aria-hidden="true">{projects.length}</span>
+    </button>
+    {
+      filters.map((filter) => (
+        <button type="button" class="filter-btn" aria-pressed="false" data-filter={filter.type}>
+          {t.work.filters[filter.type]}
+          <span class="filter-count" aria-hidden="true">
+            {filter.count}
+          </span>
+        </button>
+      ))
+    }
+  </div>
+  <p class="sr-only" aria-live="polite" data-filter-status data-one={t.work.showingOne} data-many={t.work.showingMany}>
+  </p>
+
+  <ul class="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-6" data-project-grid>
+    {projects.map((project) => <ProjectCard project={project} lang={lang} />)}
+  </ul>
+</section>
+
+<style>
+  .filter-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    border: 1px solid var(--color-line-strong);
+    background: rgb(255 255 255 / 0.03);
+    color: var(--color-muted);
+    font-size: 0.925rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      color 0.2s ease;
+  }
+
+  .filter-btn:hover {
+    color: var(--color-fg);
+    border-color: rgb(165 148 255 / 0.55);
+  }
+
+  .filter-btn[aria-pressed='true'] {
+    background: var(--color-fg);
+    border-color: var(--color-fg);
+    color: var(--color-ink);
+  }
+
+  .filter-count {
+    display: inline-grid;
+    place-items: center;
+    min-width: 1.4rem;
+    height: 1.4rem;
+    padding-inline: 0.35rem;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 0.08);
+    font-size: 0.75rem;
+  }
+
+  .filter-btn[aria-pressed='true'] .filter-count {
+    background: rgb(11 12 16 / 0.12);
+  }
+</style>
+
+<script>
+  /**
+   * Filter by project type. Progressive enhancement: the buttons are native
+   * <button>s with aria-pressed (so Tab, Enter and Space just work), they only
+   * appear once this script runs, and the result count is announced politely.
+   */
+  function setupFilters() {
+    const group = document.querySelector<HTMLElement>('[data-filter-group]');
+    const grid = document.querySelector<HTMLElement>('[data-project-grid]');
+    const status = document.querySelector<HTMLElement>('[data-filter-status]');
+    if (!group || !grid || !status || group.dataset.ready) return;
+    group.dataset.ready = 'true';
+
+    const buttons = [...group.querySelectorAll<HTMLButtonElement>('button[data-filter]')];
+    const items = [...grid.querySelectorAll<HTMLElement>(':scope > [data-type]')];
+
+    const apply = (filter: string) => {
+      let shown = 0;
+      for (const item of items) {
+        const match = filter === 'all' || item.dataset.type === filter;
+        item.hidden = !match;
+        if (match) shown += 1;
+      }
+      for (const button of buttons) {
+        button.setAttribute('aria-pressed', String(button.dataset.filter === filter));
+      }
+      const template = (shown === 1 ? status.dataset.one : status.dataset.many) ?? '';
+      status.textContent = template.replace('{count}', String(shown));
+    };
+
+    group.addEventListener('click', (event) => {
+      const button = (event.target as Element).closest<HTMLButtonElement>('button[data-filter]');
+      if (!button || button.getAttribute('aria-pressed') === 'true') return;
+      const filter = button.dataset.filter ?? 'all';
+      const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!calm && typeof document.startViewTransition === 'function') {
+        document.startViewTransition(() => apply(filter));
+      } else {
+        apply(filter);
+      }
+    });
+
+    group.hidden = false;
+  }
+
+  document.addEventListener('astro:page-load', setupFilters);
+</script>

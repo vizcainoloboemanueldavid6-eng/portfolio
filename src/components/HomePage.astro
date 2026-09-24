@@ -1,0 +1,44 @@
+---
+import type { Lang } from '../i18n/ui';
+import { fill, useTranslations } from '../i18n/utils';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getProjects } from '../lib/projects';
+import { personJsonLd } from '../lib/structured-data';
+import Contact from './home/Contact.astro';
+import Experience from './home/Experience.astro';
+import Faq from './home/Faq.astro';
+import Hero from './home/Hero.astro';
+import Process from './home/Process.astro';
+import Services from './home/Services.astro';
+import TechStack from './home/TechStack.astro';
+import Work from './home/Work.astro';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const projects = await getProjects(lang);
+const site = Astro.site ?? new URL(Astro.url.origin);
+const description = t.meta.homeDescription;
+---
+
+<BaseLayout
+  lang={lang}
+  title={fill(t.meta.homeTitle)}
+  description={description}
+  alternates={{ en: '/', es: '/es/' }}
+  image={{ path: `/og/${lang}.png`, alt: fill(t.meta.ogHomeAlt), width: 1200, height: 630 }}
+  jsonLd={[personJsonLd(site, lang, description)]}
+  isHome
+>
+  <Hero lang={lang} />
+  <Services lang={lang} />
+  <Work lang={lang} projects={projects} />
+  <Process lang={lang} />
+  <TechStack lang={lang} />
+  <Experience lang={lang} projects={projects} />
+  <Faq lang={lang} />
+  <Contact lang={lang} />
+</BaseLayout>

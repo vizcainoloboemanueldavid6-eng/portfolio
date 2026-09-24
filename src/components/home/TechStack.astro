@@ -1,0 +1,55 @@
+---
+import { profile } from '../../config/profile';
+import type { Lang } from '../../i18n/ui';
+import { useTranslations } from '../../i18n/utils';
+import { brandIcon } from '../../lib/icons';
+import BrandIcon from '../BrandIcon.astro';
+import SectionHeading from '../SectionHeading.astro';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const icons = profile.techStack.map((slug) => brandIcon(slug));
+---
+
+<section id="stack" class="container-page scroll-mt-24 py-16 md:py-24" aria-labelledby="stack-title">
+  <SectionHeading id="stack-title" eyebrow={t.stack.eyebrow} title={t.stack.title} intro={t.stack.intro} />
+
+  <ul class="mt-12 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5">
+    {
+      icons.map((icon) => (
+        <li class="tech card flex items-center gap-3 px-4 py-3.5" style={`--brand: #${icon.hex}`}>
+          <BrandIcon icon={icon} size={22} class="tech-icon shrink-0" />
+          <span class="text-sm font-medium">{icon.title}</span>
+        </li>
+      ))
+    }
+  </ul>
+</section>
+
+<style>
+  .tech {
+    border-radius: 0.9rem;
+    transition:
+      border-color 0.25s ease,
+      transform 0.3s var(--ease-out-soft);
+  }
+
+  .tech-icon {
+    color: var(--color-fg);
+    transition: color 0.25s ease;
+  }
+
+  .tech:hover {
+    transform: translateY(-2px);
+    border-color: var(--color-line-strong);
+  }
+
+  /* Brand colours only on hover, and never the near-black ones that would vanish on this background. */
+  .tech:hover .tech-icon {
+    color: color-mix(in srgb, var(--brand) 70%, white);
+  }
+</style>
