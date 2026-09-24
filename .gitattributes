@@ -1,0 +1,10 @@
+# Same line endings on every platform (the site is built on Linux by Vercel/Netlify).
+* text=auto eol=lf
+
+# Binary assets: never touch their bytes.
+*.png binary
+*.jpg binary
+*.webp binary
+*.avif binary
+*.ico binary
+*.woff2 binary
