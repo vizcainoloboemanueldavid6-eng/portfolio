@@ -1,0 +1,344 @@
+---
+import { render } from 'astro:content';
+import { profile } from '../config/profile';
+import type { Lang } from '../i18n/ui';
+import { fill, localizePath, useTranslations } from '../i18n/utils';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { stackIcon } from '../lib/icons';
+import { getProjects, isPublished, type Project } from '../lib/projects';
+import { projectJsonLd } from '../lib/structured-data';
+import BrandIcon from './BrandIcon.astro';
+import Icon from './Icon.astro';
+import ProjectImage from './ProjectImage.astro';
+
+interface Props {
+  lang: Lang;
+  project: Project;
+}
+
+const { lang, project } = Astro.props;
+const t = useTranslations(lang);
+const { data, slug, entry } = project;
+const site = Astro.site ?? new URL(Astro.url.origin);
+
+const all = await getProjects(lang);
+const index = all.findIndex((p) => p.slug === slug);
+const previous = index > 0 ? all[index - 1] : undefined;
+const next = index < all.length - 1 ? all[index + 1] : undefined;
+
+const { Content } = await render(entry);
+const hasNotes = Boolean(entry.body?.trim());
+
+const pagePath = localizePath(lang, `/projects/${slug}/`);
+const ogPath = `/og/${lang}/${slug}.png`;
+const live = isPublished(data.liveUrl);
+const source = isPublished(data.repoUrl);
+const workLink = `${localizePath(lang, '/')}#work`;
+---
+
+<BaseLayout
+  lang={lang}
+  title={fill(t.meta.projectTitle, { project: data.title, tagline: data.tagline })}
+  description={data.summary}
+  alternates={{ en: `/projects/${slug}/`, es: `/es/projects/${slug}/` }}
+  image={{
+    path: ogPath,
+    alt: fill(t.meta.ogProjectAlt, { project: data.title, tagline: data.tagline }),
+    width: 1200,
+    height: 630,
+  }}
+  type="article"
+  jsonLd={[
+    projectJsonLd({
+      title: data.title,
+      summary: data.summary,
+      url: new URL(pagePath, site),
+      image: new URL(ogPath, site),
+      stack: data.stack,
+      liveUrl: data.liveUrl,
+      repoUrl: data.repoUrl,
+      lang,
+      site,
+    }),
+  ]}
+>
+  <article>
+    <header class="container-page pt-10 md:pt-14">
+      <a
+        href={workLink}
+        class="inline-flex items-center gap-2 rounded-full text-sm font-semibold text-muted transition-colors hover:text-fg"
+      >
+        <Icon name="arrow-left" size={16} />
+        {t.project.back}
+      </a>
+
+      <div class="mt-8 flex flex-wrap gap-2">
+        <span class="badge badge-personal">{t.work.personalProject}</span>
+        <span class="badge badge-type">{t.work.types[data.type]}</span>
+      </div>
+      <h1 class="mt-5 text-4xl font-bold leading-[1.05] sm:text-5xl md:text-6xl">{data.title}</h1>
+      <p class="mt-3 font-display text-xl font-medium text-primary-soft sm:text-2xl">{data.tagline}</p>
+      <p class="mt-5 max-w-3xl text-lg leading-relaxed text-muted">{data.summary}</p>
+
+      <div class="mt-8 flex flex-wrap gap-3">
+        {
+          live ? (
+            <a href={data.liveUrl} target="_blank" rel="noopener" class="btn btn-primary">
+              <Icon name="arrow-up-right" size={18} />
+              {t.project.live}
+              <span class="sr-only">{t.a11y.opensNewTab}</span>
+            </a>
+          ) : (
+            <span class="btn btn-disabled">
+              <Icon name="clock" size={18} />
+              <span class="sr-only">{t.project.liveSoonLabel}</span>
+              <span aria-hidden="true">{t.project.live}</span>
+              <span class="soon-tag" aria-hidden="true">
+                {t.project.comingSoon}
+              </span>
+            </span>
+          )
+        }
+        {
+          source ? (
+            <a href={data.repoUrl} target="_blank" rel="noopener" class="btn btn-ghost">
+              <Icon name="code" size={18} />
+              {t.project.source}
+              <span class="sr-only">{t.a11y.opensNewTab}</span>
+            </a>
+          ) : (
+            <span class="btn btn-disabled">
+              <Icon name="clock" size={18} />
+              <span class="sr-only">{t.project.sourceSoonLabel}</span>
+              <span aria-hidden="true">{t.project.source}</span>
+              <span class="soon-tag" aria-hidden="true">
+                {t.project.comingSoon}
+              </span>
+            </span>
+          )
+        }
+      </div>
+
+      <dl class="mt-10 grid grid-cols-2 gap-x-6 gap-y-5 border-t border-line pt-6 text-sm sm:grid-cols-4">
+        <div>
+          <dt class="text-muted">{t.project.type}</dt>
+          <dd class="mt-1 font-semibold">{t.work.types[data.type]}</dd>
+        </div>
+        <div>
+          <dt class="text-muted">{t.project.role}</dt>
+          <dd class="mt-1 font-semibold">{t.project.roleValue}</dd>
+        </div>
+        <div>
+          <dt class="text-muted">{t.project.kind}</dt>
+          <dd class="mt-1 font-semibold">{t.work.personalProject}</dd>
+        </div>
+        <div>
+          <dt class="text-muted">{t.project.status}</dt>
+          <dd class="mt-1 inline-flex items-center gap-2 font-semibold">
+            <span class:list={['status-dot', live ? 'bg-secondary' : 'bg-muted']} aria-hidden="true"></span>
+            {live ? t.project.statusLive : t.project.statusSoon}
+          </dd>
+        </div>
+      </dl>
+    </header>
+
+    <div class="container-page mt-10">
+      <div class="card overflow-hidden p-1.5 sm:p-2">
+        <ProjectImage
+          src={data.cover}
+          alt={data.coverAlt}
+          sizes="(min-width: 1152px) 1088px, 94vw"
+          loading="eager"
+          fetchpriority="high"
+          class="aspect-[16/10] h-auto w-full rounded-[0.9rem] object-cover object-top"
+          transitionName={`cover-${slug}`}
+        />
+      </div>
+    </div>
+
+    <div class="container-page mt-16 grid gap-14 lg:grid-cols-[minmax(0,1fr)_20rem]">
+      <div class="grid gap-14">
+        <section aria-labelledby="problem-title">
+          <h2 id="problem-title" class="text-2xl font-bold sm:text-3xl">{t.project.problem}</h2>
+          <p class="mt-4 text-lg leading-relaxed text-muted">{data.problem}</p>
+        </section>
+        <section aria-labelledby="solution-title">
+          <h2 id="solution-title" class="text-2xl font-bold sm:text-3xl">{t.project.solution}</h2>
+          <p class="mt-4 text-lg leading-relaxed text-muted">{data.solution}</p>
+        </section>
+        <section aria-labelledby="features-title">
+          <h2 id="features-title" class="text-2xl font-bold sm:text-3xl">{t.project.features}</h2>
+          <ul class="mt-6 grid gap-4">
+            {
+              data.features.map((feature) => (
+                <li class="flex items-start gap-3">
+                  <span class="feature-check" aria-hidden="true">
+                    <Icon name="check" size={16} strokeWidth={2.4} />
+                  </span>
+                  <span class="leading-relaxed">{feature}</span>
+                </li>
+              ))
+            }
+          </ul>
+        </section>
+        {
+          hasNotes && (
+            <section aria-labelledby="notes-title">
+              <h2 id="notes-title" class="text-2xl font-bold sm:text-3xl">
+                {t.project.notes}
+              </h2>
+              <div class="prose-case mt-4">
+                <Content />
+              </div>
+            </section>
+          )
+        }
+      </div>
+
+      <aside class="lg:sticky lg:top-24 lg:self-start" aria-labelledby="stack-title">
+        <div class="card p-6">
+          <h2 id="stack-title" class="text-lg font-bold">{t.project.stack}</h2>
+          <ul class="mt-4 flex flex-wrap gap-2">
+            {
+              data.stack.map((tech) => {
+                const icon = stackIcon(tech);
+                return (
+                  <li class="chip py-1.5">
+                    {icon && <BrandIcon icon={icon} size={14} />}
+                    {tech}
+                  </li>
+                );
+              })
+            }
+          </ul>
+        </div>
+      </aside>
+    </div>
+
+    {
+      data.screenshots.length > 0 && (
+        <section class="container-page mt-20" aria-labelledby="screenshots-title">
+          <h2 id="screenshots-title" class="text-2xl font-bold sm:text-3xl">
+            {t.project.screenshots}
+          </h2>
+          <div class="mt-8 grid gap-6 md:grid-cols-2">
+            {data.screenshots.map((shot) => (
+              <figure class="card overflow-hidden p-1.5">
+                <ProjectImage
+                  src={shot.src}
+                  alt={shot.alt}
+                  sizes="(min-width: 1152px) 530px, (min-width: 768px) 46vw, 94vw"
+                  class="aspect-[16/10] h-auto w-full rounded-[0.9rem] object-cover object-top"
+                />
+                {shot.caption && (
+                  <figcaption class="px-3 pb-3 pt-4 text-sm leading-relaxed text-muted">
+                    {shot.caption}
+                  </figcaption>
+                )}
+              </figure>
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    <nav class="container-page mt-20 grid gap-4 sm:grid-cols-2" aria-label={t.work.title}>
+      {
+        previous ? (
+          <a
+            href={localizePath(lang, `/projects/${previous.slug}/`)}
+            class="pager card flex flex-col gap-1 p-5"
+          >
+            <span class="inline-flex items-center gap-2 text-sm text-muted">
+              <Icon name="arrow-left" size={16} />
+              {t.project.prev}
+            </span>
+            <span class="font-display text-xl font-bold">{previous.data.title}</span>
+          </a>
+        ) : (
+          <span class="hidden sm:block" />
+        )
+      }
+      {
+        next && (
+          <a
+            href={localizePath(lang, `/projects/${next.slug}/`)}
+            class="pager card flex flex-col items-end gap-1 p-5 text-right"
+          >
+            <span class="inline-flex items-center gap-2 text-sm text-muted">
+              {t.project.next}
+              <Icon name="arrow-right" size={16} />
+            </span>
+            <span class="font-display text-xl font-bold">{next.data.title}</span>
+          </a>
+        )
+      }
+    </nav>
+
+    <section class="container-page mt-16" aria-labelledby="cta-title">
+      <div class="cta card flex flex-col items-start gap-6 p-8 sm:p-10 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h2 id="cta-title" class="text-2xl font-bold sm:text-3xl">{t.project.ctaTitle}</h2>
+          <p class="mt-2 max-w-xl text-muted">{fill(t.project.ctaText, { title: data.title })}</p>
+        </div>
+        <a href={profile.links.fiverr} target="_blank" rel="noopener" class="btn btn-primary btn-lg shrink-0">
+          {t.project.ctaButton}
+          <span class="sr-only">{t.a11y.opensNewTab}</span>
+        </a>
+      </div>
+    </section>
+  </article>
+</BaseLayout>
+
+<style>
+  .btn-disabled {
+    cursor: not-allowed;
+    background-color: rgb(255 255 255 / 0.03);
+    border: 1px dashed var(--color-line-strong);
+    color: var(--color-muted);
+  }
+
+  .soon-tag {
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 0.07);
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .status-dot {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+  }
+
+  .feature-check {
+    display: inline-grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 1.6rem;
+    height: 1.6rem;
+    margin-top: 0.1rem;
+    border-radius: 999px;
+    color: var(--color-ink);
+    background: var(--color-secondary);
+  }
+
+  .pager {
+    transition:
+      border-color 0.25s ease,
+      transform 0.3s var(--ease-out-soft);
+  }
+
+  .pager:hover {
+    border-color: rgb(124 92 255 / 0.45);
+    transform: translateY(-3px);
+  }
+
+  .cta {
+    border-color: rgb(124 92 255 / 0.35);
+    background:
+      radial-gradient(70% 120% at 0% 0%, rgb(124 92 255 / 0.2), transparent 70%),
+      var(--color-surface);
+  }
+</style>
