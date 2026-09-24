@@ -6,23 +6,28 @@
  *   npm run build && npm run checks
  *
  * The projects are read from src/content/projects/{en,es}/*.md, so adding,
- * renaming or publishing a project needs no change in this file.
+ * renaming or publishing a project needs no change in this file. (Going below
+ * the spec's five projects does: lower MIN_PROJECTS.)
  */
+import { createHash } from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { chromium } from 'playwright';
 import { profile } from '../src/config/profile.ts';
+import imageManifest from '../src/data/images.json' with { type: 'json' };
+import { resolveImage, selectImage } from '../src/lib/images.ts';
+import { loadProjects } from './lib/content.mjs';
+import { placeholderSvg, PLACEHOLDERS } from './placeholders.mjs';
 import { startStaticServer } from './static-server.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const DIST = path.join(ROOT, 'dist');
-const CONTENT = path.join(ROOT, 'src', 'content', 'projects');
 const PORT = Number(process.env.CHECKS_PORT) || 4335;
 const BASE = `http://localhost:${PORT}`;
 const LANGS = ['en', 'es'];
 const TYPE_ORDER = ['website', 'chrome-extension', 'web-app'];
-/** The spec's portfolio: projects 01–05. */
-const EXPECTED_PROJECTS = 5;
+/** The spec's portfolio: projects 01–05. More is fine. */
+const MIN_PROJECTS = 5;
 /** Owner's real deployment of project 01; a stranger owns bella-cucina.vercel.app. */
 const FORBIDDEN_HOSTS = ['bella-cucina.vercel.app'];
 
@@ -100,33 +105,6 @@ async function walk(dir) {
 const decodeEntities = (value) =>
   value.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>');
 
-/** Minimal frontmatter reader: enough for the flat keys the checks need. */
-async function loadProjects(lang) {
-  const dir = path.join(CONTENT, lang);
-  const files = (await fs.readdir(dir)).filter((file) => file.endsWith('.md'));
-  const projects = [];
-  for (const file of files) {
-    const text = await fs.readFile(path.join(dir, file), 'utf8');
-    const front = text.split(/^---\s*$/m)[1] ?? '';
-    const field = (key) => {
-      const raw = front.match(new RegExp(`^${key}:[ \\t]*(.+)$`, 'm'))?.[1]?.trim() ?? '';
-      const quoted = raw.match(/^(['"])(.*?)\1/);
-      return quoted ? quoted[2] : raw.split(/\s+#/)[0].trim();
-    };
-    const shotsBlock = front.split(/^screenshots:/m)[1] ?? '';
-    projects.push({
-      slug: file.replace(/\.md$/, ''),
-      title: field('title'),
-      type: field('type'),
-      liveUrl: field('liveUrl'),
-      repoUrl: field('repoUrl'),
-      order: Number(field('order')),
-      screenshots: (shotsBlock.split(/^\S/m)[0].match(/^\s+- src:/gm) ?? []).length,
-    });
-  }
-  return projects.sort((a, b) => a.order - b.order || a.slug.localeCompare(b.slug));
-}
-
 const PROJECTS = await loadProjects('en');
 const PROJECTS_ES = await loadProjects('es');
 const SLUGS = PROJECTS.map((project) => project.slug);
@@ -144,7 +122,7 @@ const PAGES = [
 /* ------------------------------------------------------------------------ */
 
 async function contentChecks() {
-  check(SLUGS.length === EXPECTED_PROJECTS, `${EXPECTED_PROJECTS} projects in src/content/projects/en (found ${SLUGS.length})`);
+  check(SLUGS.length >= MIN_PROJECTS, `at least ${MIN_PROJECTS} projects in src/content/projects/en (found ${SLUGS.length})`);
   check(
     PROJECTS_ES.length === PROJECTS.length && PROJECTS_ES.every((p) => SLUGS.includes(p.slug)),
     'every project has a Spanish version with the same slug',
@@ -170,6 +148,51 @@ async function contentChecks() {
   for (const url of [profile.links.fiverr, profile.links.github, ...Object.values(profile.services).map((s) => s.gigUrl)]) {
     const { pathname } = new URL(url);
     check(pathname.replace(/\/+$/, '') === '' || !url.includes('mateobuilds'), `profile link ${url} is a site root, not a made-up username`);
+  }
+
+  // Project repositories on GitHub belong to the owner's GitHub profile (or, while
+  // the profile is still the example, at least to one single account).
+  const accountOf = (url) => new URL(url).pathname.split('/').filter(Boolean)[0]?.toLowerCase() ?? '';
+  const githubRepos = PROJECTS.filter((p) => p.repoUrl !== '#' && new URL(p.repoUrl).hostname === 'github.com');
+  const profileAccount = accountOf(profile.links.github);
+  const repoAccounts = [...new Set(githubRepos.map((p) => accountOf(p.repoUrl)))];
+  if (profileAccount) {
+    check(repoAccounts.every((account) => account === profileAccount), `every GitHub repoUrl is on profile.links.github's account "${profileAccount}" (found ${repoAccounts.join(', ')})`);
+  } else {
+    check(repoAccounts.length <= 1, `GitHub repoUrls all belong to one account (found ${repoAccounts.join(', ')})`);
+  }
+
+  // Cover placeholders: the project name and colour only (no English label on
+  // Spanish pages), and the committed SVGs are what the generator makes today.
+  for (const item of PLACEHOLDERS) {
+    const file = path.join(ROOT, 'public', 'projects', item.slug, 'cover.svg');
+    if (!(await exists(file))) continue;
+    const svg = await fs.readFile(file, 'utf8');
+    check(svg === placeholderSvg(item), `public/projects/${item.slug}/cover.svg is up to date with scripts/placeholders.mjs`);
+    const textPaths = (svg.match(/<path /g) ?? []).length - 1; // minus the dot grid
+    check(textPaths === 1, `${item.slug} placeholder shows the name only, no language-specific label (${textPaths} text line(s))`);
+  }
+
+  // Optimised images: the variants are used only for the unchanged plain .webp
+  // that `npm run images` wrote. A cover replaced by hand (README "Forma rápida")
+  // must be served as it is, never hidden behind the old variants.
+  const entries = Object.entries(imageManifest);
+  check(entries.length > 0 && entries.every(([, entry]) => /^[0-9a-f]{16}$/.test(entry.hash ?? '')), 'every src/data/images.json entry records the hash of its plain .webp');
+  for (const [key, entry] of entries) {
+    const file = path.join(ROOT, 'public', `${key}.webp`);
+    const hash = (await exists(file)) ? createHash('sha256').update(await fs.readFile(file)).digest('hex').slice(0, 16) : null;
+    const resolved = resolveImage(`${key}.webp`);
+    const optimised = Boolean(resolved.avif) && resolved.src === `${key}-${entry.width}.webp`;
+    check(optimised === (hash === entry.hash), `${key}.webp: ${hash === entry.hash ? 'unchanged, served through its variants' : 'changed by hand, served as it is'}`);
+  }
+  const [sampleKey, sampleEntry] = entries[0] ?? [];
+  if (sampleKey) {
+    const replaced = selectImage(`${sampleKey}.webp`, sampleEntry, '0000000000000000');
+    check(replaced.src === `${sampleKey}.webp` && !replaced.avif && !replaced.webp, 'a hand-replaced .webp is served as it is, not through its old variants');
+    const png = selectImage(`${sampleKey}.png`, sampleEntry, sampleEntry.hash);
+    check(png.src === `${sampleKey}.png` && !png.avif, 'a .png with the same name as an optimised image is served as it is');
+    const same = selectImage(`${sampleKey}.webp`, sampleEntry, sampleEntry.hash);
+    check(Boolean(same.avif) && same.width === sampleEntry.width, 'the unchanged plain .webp gets its AVIF/WebP srcset and real size');
   }
 }
 
@@ -227,8 +250,16 @@ async function staticChecks() {
   check(ico.readUInt16LE(2) === 1 && ico.readUInt16LE(4) === 3, 'favicon.ico holds three icon sizes');
   const favicon = await fs.readFile(path.join(DIST, 'favicon.svg'), 'utf8');
   check(favicon.startsWith('<svg') && favicon.includes('<path'), 'favicon.svg is an SVG with the initials as outlines');
-  const manifest = JSON.parse(await fs.readFile(path.join(DIST, 'site.webmanifest'), 'utf8'));
-  for (const icon of manifest.icons ?? []) check(await exists(distFile(icon.src)), `site.webmanifest icon ${icon.src} exists`);
+  for (const lang of LANGS) {
+    const file = lang === 'en' ? 'site.webmanifest' : `${lang}/site.webmanifest`;
+    const manifest = await fs.readFile(path.join(DIST, file), 'utf8').then(JSON.parse, () => ({}));
+    for (const icon of manifest.icons ?? []) check(await exists(distFile(icon.src)), `${file} icon ${icon.src} exists`);
+    const home = lang === 'en' ? '/' : `/${lang}/`;
+    check(
+      manifest.lang === lang && manifest.start_url === home && manifest.name === `${profile.name} · ${profile.jobTitle[lang]}`,
+      `${file} is in ${lang}: lang, start_url ${home} and the ${lang} job title (got ${manifest.lang}, ${manifest.start_url}, "${manifest.name}")`,
+    );
+  }
 
   // Every reference in every built page resolves: links, images, srcsets,
   // scripts, preloads, Open Graph images, CSS url()s and #fragments.
@@ -355,6 +386,9 @@ async function pageChecks(browser, site) {
         twitter: attr('meta[name="twitter:card"]', 'content'),
         jsonLd: [...document.querySelectorAll('script[type="application/ld+json"]')].map((s) => s.textContent),
         switchHref: attr('header a[data-lang-switch]', 'href'),
+        manifest: attr('link[rel="manifest"]', 'href'),
+        avatarDots: document.querySelectorAll('.avatar-dot').length,
+        availableBadge: document.querySelectorAll('.status-dot').length,
         scrollWidth: document.documentElement.scrollWidth,
         widest: Math.max(...[...document.querySelectorAll('body *')].map((el) => el.getBoundingClientRect().right)),
         imagesWithoutAlt: [...document.querySelectorAll('img')].filter((img) => !img.hasAttribute('alt')).length,
@@ -374,9 +408,14 @@ async function pageChecks(browser, site) {
     const claims = sentences.filter((s) => CLAIMS.some((re) => re.test(s)) && !DISCLOSURE.test(s));
     check(claims.length === 0, `${target.path}: no invented clients, reviews, ratings or experience (${claims.slice(0, 2).join(' | ')})`);
 
-    if (target.notFound) continue;
+    if (target.notFound) {
+      // Like the canonical, og:url is left out: /404/ is not a page anyone can open.
+      check(info.ogUrl === null && info.canonical === null, `${target.path} (404): no og:url and no canonical (got ${info.ogUrl})`);
+      continue;
+    }
 
     check(info.lang === target.lang, `${target.path}: <html lang="${target.lang}"> (got ${info.lang})`);
+    check(info.manifest === (target.lang === 'en' ? '/site.webmanifest' : `/${target.lang}/site.webmanifest`), `${target.path}: links the ${target.lang} web app manifest (got ${info.manifest})`);
     check(info.h1 === 1, `${target.path}: exactly one <h1> (got ${info.h1})`);
     check(Boolean(info.title) && info.title.length <= 110, `${target.path}: has a title`);
     check(info.description && info.description.length >= 50 && info.description.length <= 200, `${target.path}: meta description of 50–200 characters`);
@@ -407,6 +446,11 @@ async function pageChecks(browser, site) {
       const person = parsed.find((item) => item['@type'] === 'Person');
       check(person?.name === profile.name && person?.email === `mailto:${profile.email}`, `${target.path}: JSON-LD Person built from profile.ts`);
       check(!person?.sameAs, `${target.path}: placeholder profile links are not published as sameAs`);
+      check(JSON.stringify(person?.knowsAbout) === JSON.stringify(profile.knowsAbout[own]), `${target.path}: JSON-LD knowsAbout is the ${own} list from profile.ts`);
+      check(
+        info.avatarDots === (profile.available ? 1 : 0) && info.availableBadge === (profile.available ? 1 : 0),
+        `${target.path}: the "available" badge and the avatar's online dot both follow profile.available (${profile.available}; dots ${info.avatarDots}, badges ${info.availableBadge})`,
+      );
       check(
         info.experience.length === SLUGS.length &&
           info.experience.every((text) => text.includes(PERSONAL[own]) && !/\b(19|20)\d{2}\b/.test(text)),
@@ -616,6 +660,269 @@ async function behaviourChecks(browser) {
 }
 
 /* ------------------------------------------------------------------------ */
+/* Section links, language switch and history, with smooth scrolling on       */
+/* ------------------------------------------------------------------------ */
+
+/** The scroll-padding-top in global.css (4.5rem): where a section's top lands. */
+const SECTION_TOP = 72;
+
+/** Waits until #id has stopped moving on screen (smooth scrolling done) and returns its top. */
+async function settledTop(page, id) {
+  return page.evaluate(
+    (targetId) =>
+      new Promise((resolve) => {
+        const started = performance.now();
+        let last = Number.NaN;
+        let still = 0;
+        const tick = () => {
+          const el = document.getElementById(targetId);
+          const top = el ? Math.round(el.getBoundingClientRect().top) : Number.NaN;
+          still = top === last && top < window.innerHeight ? still + 1 : 0;
+          last = top;
+          if (still >= 25 || performance.now() - started > 8000) resolve(top);
+          else requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      }),
+    id,
+  );
+}
+
+async function navigationChecks(browser) {
+  const sample = PROJECTS.at(-1);
+  const errors = [];
+
+  for (const viewport of [
+    { width: 375, height: 812 },
+    { width: 1440, height: 900 },
+  ]) {
+    // Default motion on purpose: smooth scrolling is where the offsets went wrong.
+    const context = await browser.newContext({ viewport });
+    context.setDefaultTimeout(15000);
+    context.on('console', (message) => message.type() === 'error' && errors.push(message.text()));
+    context.on('weberror', (error) => errors.push(error.error().message));
+    const page = await context.newPage();
+    const w = viewport.width;
+
+    // One offset only (scroll-padding), not scroll-padding + scroll-margin.
+    const direct = {};
+    for (const id of ['process', 'faq', 'contact']) {
+      await page.goto(`${BASE}/#${id}`, { waitUntil: 'networkidle' });
+      direct[id] = await settledTop(page, id);
+    }
+    check(Math.abs(direct.process - SECTION_TOP) <= 2 && Math.abs(direct.faq - SECTION_TOP) <= 2, `${w}px: /#process and /#faq land ${SECTION_TOP}px from the top, just under the header (got ${direct.process}, ${direct.faq})`);
+
+    // From a case study to a home section below the Work filter, through the
+    // client router: must land exactly where a direct load lands.
+    for (const id of ['process', 'faq', 'contact']) {
+      await page.goto(`${BASE}/projects/${sample.slug}/`, { waitUntil: 'networkidle' });
+      if (w < 1024) await page.click('[data-mobile-menu] summary');
+      await page.locator(`header a[href="/#${id}"]:visible`).first().click();
+      await page.waitForURL(`${BASE}/#${id}`).catch(() => {});
+      const top = await settledTop(page, id);
+      check(page.url() === `${BASE}/#${id}` && Math.abs(top - direct[id]) <= 3, `${w}px: header link from a case study to /#${id} lands where a direct load does (${top} vs ${direct[id]}, at ${page.url().replace(BASE, '')})`);
+    }
+
+    // Switching language from a section keeps the visitor on that section.
+    await page.goto(`${BASE}/es/#faq`, { waitUntil: 'networkidle' });
+    await settledTop(page, 'faq');
+    await page.click('header a[data-lang-switch]');
+    await page.waitForURL(`${BASE}/#faq`).catch(() => {});
+    const switched = await settledTop(page, 'faq');
+    check(page.url() === `${BASE}/#faq` && Math.abs(switched - direct.faq) <= 3, `${w}px: /es/#faq → English lands on the FAQ like a direct load (${switched} vs ${direct.faq})`);
+
+    // Focusing something in the sticky header (Tab, or a click on Menu) must
+    // not scroll the page: the header is always in view.
+    const scrollY = () => page.evaluate(() => Math.round(window.scrollY));
+    const before = await scrollY();
+    const jumps = [];
+    if (w < 1024) {
+      const summary = await page.locator('[data-mobile-menu] summary').boundingBox();
+      if (summary) await page.mouse.click(summary.x + summary.width / 2, summary.y + summary.height / 2);
+      await page.waitForTimeout(300);
+      const y = await scrollY();
+      if (Math.abs(y - before) > 2) jumps.push(`Menu click: ${before} → ${y}`);
+      await page.keyboard.press('Escape');
+    }
+    await page.evaluate(() => document.querySelector('header a')?.focus({ preventScroll: true }));
+    let tabs = 0;
+    for (; tabs < 12; tabs += 1) {
+      await page.keyboard.press('Tab');
+      if (!(await page.evaluate(() => Boolean(document.activeElement?.closest('header'))))) break;
+      await page.waitForTimeout(150);
+      const y = await scrollY();
+      if (Math.abs(y - before) > 2) jumps.push(`Tab ${tabs + 1}: ${before} → ${y}`);
+    }
+    check(before > 1000 && tabs >= 2 && jumps.length === 0, `${w}px: focusing header items (menu click, ${tabs} Tabs) does not scroll the page (${jumps.join(', ') || `stays at ${before}`})`);
+    await context.close();
+  }
+
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
+  context.setDefaultTimeout(15000);
+  context.on('weberror', (error) => errors.push(error.error().message));
+  const page = await context.newPage();
+
+  // The switch carries the section being read now, not the last #hash in the URL.
+  await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
+  await page.click('#hero-title ~ div a[href="#work"]');
+  await page.waitForURL(`${BASE}/#work`);
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await page.waitForTimeout(200);
+  await page.click('footer a[data-lang-switch]');
+  await page.waitForURL(/\/es\/(#.*)?$/);
+  const lastSection = await page.evaluate(() => [...document.querySelectorAll('main section[id]')].at(-1)?.id);
+  check(page.url() === `${BASE}/es/#${lastSection}`, `after jumping to #work and scrolling to the bottom, the switch leads to /es/#${lastSection} (got ${page.url().replace(BASE, '')})`);
+
+  await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
+  await page.evaluate(() => document.getElementById('faq')?.scrollIntoView());
+  await page.click('header a[data-lang-switch]');
+  await page.waitForURL(/\/es\/(#.*)?$/);
+  check(page.url() === `${BASE}/es/#faq`, `scrolled to the FAQ without a #hash, the switch leads to /es/#faq (got ${page.url().replace(BASE, '')})`);
+
+  await page.goto(`${BASE}/es/`, { waitUntil: 'networkidle' });
+  await page.click('header a[data-lang-switch]');
+  await page.waitForURL(/localhost:\d+\/(#.*)?$/);
+  check(page.url() === `${BASE}/`, `from the top of /es/ the switch leads to / with no section (got ${page.url().replace(BASE, '')})`);
+
+  // Back to a #hash entry the router did not create (typed into the address bar).
+  await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
+  await page.goto(`${BASE}/#faq`);
+  const nullState = await page.evaluate(() => history.state === null);
+  await page.click(`[data-project-grid] a[href="/projects/${PROJECTS[0].slug}/"]`);
+  await page.waitForURL(`${BASE}/projects/${PROJECTS[0].slug}/`);
+  await page.waitForLoadState('networkidle');
+  await page.goBack();
+  await page.waitForURL(`${BASE}/#faq`);
+  // The fix reloads the page, so the document may be replaced while this looks.
+  let restored = false;
+  for (let i = 0; i < 50 && !restored; i += 1) {
+    await page.waitForTimeout(100);
+    restored = await page
+      .evaluate(() => Boolean(document.getElementById('hero-title') && document.querySelector('[data-project-grid]')))
+      .catch(() => false);
+  }
+  check(nullState && restored, `Back to a typed /#faq entry shows the home page again, not the case study (state null: ${nullState}, home shown: ${restored})`);
+
+  check(errors.length === 0, `navigation checks: no console errors (${errors.slice(0, 3).join(' | ')})`);
+  await context.close();
+}
+
+/* ------------------------------------------------------------------------ */
+/* Header: fits every width, readable over bright content, labels in names   */
+/* ------------------------------------------------------------------------ */
+
+function luminance([r, g, b]) {
+  const [R, G, B] = [r, g, b].map((v) => {
+    const c = v / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * R + 0.7152 * G + 0.0722 * B;
+}
+const contrast = (a, b) => {
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return (hi + 0.05) / (lo + 0.05);
+};
+
+async function headerChecks(browser) {
+  const context = await browser.newContext({ viewport: { width: 375, height: 812 }, reducedMotion: 'reduce' });
+  const page = await context.newPage();
+  const widths = [320, 360, 375, 414, 640, 700, 768, 800, 820, 834, 900, 1000, 1024, 1100, 1280, 1440];
+
+  for (const url of ['/', '/es/', `/es/projects/${SLUGS[0]}/`]) {
+    await page.goto(`${BASE}${url}`, { waitUntil: 'networkidle' });
+    const overflow = [];
+    for (const width of widths) {
+      await page.setViewportSize({ width, height: 800 });
+      const worst = await page.evaluate(() => {
+        const limit = document.documentElement.clientWidth;
+        let right = 0;
+        for (const el of document.querySelectorAll('header *')) {
+          const box = el.getBoundingClientRect();
+          if (box.width > 1 && box.height > 1 && !el.closest('.menu-panel')) right = Math.max(right, box.right);
+        }
+        return right - limit;
+      });
+      if (worst > 0.5) overflow.push(`${width}px +${Math.round(worst)}`);
+    }
+    check(overflow.length === 0, `${url}: every header item fits from 320 to 1440 px (overflow at ${overflow.join(', ')})`);
+  }
+
+  // The translucent header over the brightest possible content (white): the
+  // muted nav links must still reach 4.5:1.
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(`${BASE}/es/`, { waitUntil: 'networkidle' });
+  await page.evaluate(() => {
+    const white = document.createElement('div');
+    white.style.cssText = 'position:fixed;inset:0 0 auto 0;height:240px;background:#fff;z-index:30';
+    document.body.append(white);
+  });
+  await page.waitForTimeout(100);
+  const link = page.locator('header nav a').first();
+  const box = await link.boundingBox();
+  const textColor = await link.evaluate((el) => getComputedStyle(el).color.match(/\d+/g).slice(0, 3).map(Number));
+  if (box) {
+    const shot = await page.screenshot({ clip: { x: Math.round(box.x) + 3, y: Math.round(box.y) + 3, width: 1, height: 1 } });
+    const { default: sharp } = await import('sharp');
+    const pixel = [...(await sharp(shot).removeAlpha().raw().toBuffer())].slice(0, 3);
+    const ratio = contrast(textColor, pixel);
+    check(ratio >= 4.5, `header nav links keep ${ratio.toFixed(2)}:1 (≥ 4.5) over white content scrolling under the header (background rgb(${pixel.join(', ')}))`);
+  } else {
+    failures.push('header nav link not found for the contrast check');
+  }
+
+  // Label in Name (WCAG 2.5.3): the visible text of the logo and the language
+  // switcher is part of their accessible name, at every size.
+  for (const [width, url] of [
+    [320, '/'],
+    [375, '/es/'],
+    [375, '/'],
+    [1440, '/'],
+    [1440, '/es/'],
+  ]) {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto(`${BASE}${url}`, { waitUntil: 'networkidle' });
+    for (const selector of ['header a[data-lang-switch]', 'header a.group']) {
+      const locator = page.locator(selector).first();
+      const snapshot = await locator.ariaSnapshot();
+      const name = (snapshot.match(/^- link "([^"]*)"/m)?.[1] ?? '').toLowerCase().replace(/\s+/g, ' ').trim();
+      const visible = (
+        await locator.evaluate((el) => {
+          const parts = [];
+          const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+          while (walker.nextNode()) {
+            const node = walker.currentNode;
+            const parent = node.parentElement;
+            if (!parent || !node.textContent?.trim()) continue;
+            const style = getComputedStyle(parent);
+            const rect = parent.getBoundingClientRect();
+            const hidden = style.display === 'none' || style.visibility === 'hidden' || (rect.width <= 1 && rect.height <= 1);
+            if (!hidden && parent.checkVisibility()) parts.push(node.textContent.trim());
+          }
+          return parts.join(' ');
+        })
+      )
+        .toLowerCase()
+        .replace(/\s+/g, ' ')
+        .trim();
+      // Whole words: "es" inside "español" does not count.
+      const inName = new RegExp(`(^|\\s)${visible.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(\\s|$)`).test(name);
+      check(Boolean(visible) && inName, `${url} at ${width}px: ${selector} shows "${visible}" and its accessible name "${name}" contains it`);
+    }
+  }
+  await context.close();
+}
+
+/** The local server survives malformed requests (it serves checks, audit and shots). */
+async function serverChecks() {
+  const bad = await fetch(`${BASE}/%E0%A4%A`);
+  check(bad.status === 400, `static server answers 400 to a malformed %-escape (got ${bad.status})`);
+  const outside = await fetch(`${BASE}/..%2f..%2fpackage.json`);
+  check(outside.status === 404, `static server never serves files outside dist/ (got ${outside.status})`);
+  const home = await fetch(`${BASE}/`);
+  check(home.status === 200, 'static server still answers after a bad request');
+}
+
+/* ------------------------------------------------------------------------ */
 /* Reduced motion                                                             */
 /* ------------------------------------------------------------------------ */
 
@@ -695,6 +1002,9 @@ async function main() {
     await pageChecks(browser, site);
     for (const lang of LANGS) await filterChecks(browser, lang);
     await behaviourChecks(browser);
+    await navigationChecks(browser);
+    await headerChecks(browser);
+    await serverChecks();
     await motionChecks(browser);
     await noJsChecks(browser);
     await notFoundChecks(browser);
