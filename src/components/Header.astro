@@ -134,12 +134,13 @@ const links = [
     display: none;
   }
 
-  .mobile-menu .icon-close,
-  .mobile-menu[open] .icon-open {
+  /* The icons are rendered by <Icon>, outside this component's scope. */
+  .mobile-menu :global(.icon-close),
+  .mobile-menu[open] :global(.icon-open) {
     display: none;
   }
 
-  .mobile-menu[open] .icon-close {
+  .mobile-menu[open] :global(.icon-close) {
     display: block;
   }
 </style>

@@ -109,7 +109,7 @@ ${textPath(`@${profile.username}`, { x: 144, y: y + 8, size: 22, weight: 400, fi
 export async function ogHomePng(lang: 'en' | 'es', tagline: string): Promise<Buffer> {
   const nameLines = wrap(profile.name, 88, 700, 700, 2);
   const taglineLines = wrap(tagline, 38, 720, 500, 3);
-  const titleTop = 200;
+  const titleTop = 218;
   const taglineTop = titleTop + (nameLines.length - 1) * 92 + 76;
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${OG_WIDTH}" height="${OG_HEIGHT}">
@@ -158,7 +158,7 @@ export async function ogProjectPng(project: OgProject): Promise<Buffer> {
 
   const titleLines = wrap(project.title, 68, 520, 700, 2);
   const taglineLines = wrap(project.tagline, 32, 520, 500, 3);
-  const titleTop = 196;
+  const titleTop = 206;
   const taglineTop = titleTop + (titleLines.length - 1) * 74 + 64;
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${OG_WIDTH}" height="${OG_HEIGHT}">

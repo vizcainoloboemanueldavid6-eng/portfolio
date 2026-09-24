@@ -85,19 +85,20 @@ const sizes = data.featured
     outline-offset: 4px;
   }
 
-  .project-cover {
+  /* .project-cover and .read-arrow are rendered by child components, hence :global. */
+  .project-card :global(.project-cover) {
     transition: transform 0.6s var(--ease-out-soft);
   }
 
-  .project-card:hover .project-cover {
+  .project-card:hover :global(.project-cover) {
     transform: scale(1.035);
   }
 
-  .read-arrow {
+  .project-card :global(.read-arrow) {
     transition: transform 0.3s var(--ease-out-soft);
   }
 
-  .project-card:hover .read-arrow {
+  .project-card:hover :global(.read-arrow) {
     transform: translateX(4px);
   }
 

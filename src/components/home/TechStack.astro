@@ -38,7 +38,8 @@ const icons = profile.techStack.map((slug) => brandIcon(slug));
       transform 0.3s var(--ease-out-soft);
   }
 
-  .tech-icon {
+  /* The icon is rendered by <BrandIcon>, outside this component's scope. */
+  .tech :global(.tech-icon) {
     color: var(--color-fg);
     transition: color 0.25s ease;
   }
@@ -49,7 +50,7 @@ const icons = profile.techStack.map((slug) => brandIcon(slug));
   }
 
   /* Brand colours only on hover, and never the near-black ones that would vanish on this background. */
-  .tech:hover .tech-icon {
+  .tech:hover :global(.tech-icon) {
     color: color-mix(in srgb, var(--brand) 70%, white);
   }
 </style>
