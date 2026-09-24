@@ -192,19 +192,7 @@ async function pageChecks(browser) {
   await context.close();
 }
 
-async function filterChecks(browser) {
-  const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, reducedMotion: 'reduce' });
-  const page = await context.newPage();
-  await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
-
-  const visibleTypes = () =>
-    page.$$eval('[data-project-grid] > [data-type]', (items) =>
-      items.filter((item) => !item.hidden && item.getBoundingClientRect().height > 0).map((item) => item.dataset.type),
-    );
-
-  check(await page.isVisible('[data-filter-group]'), 'filter: buttons appear once JavaScript runs');
-  check((await visibleTypes()).length === 5, 'filter: all five projects shown at first');
-
+async function filterInteractions(page, visibleTypes) {
   await page.click('button[data-filter="chrome-extension"]');
   let types = await visibleTypes();
   check(types.length === 2 && types.every((type) => type === 'chrome-extension'), `filter: "Chrome extensions" shows the two extensions (got ${types.join(', ')})`);
@@ -225,6 +213,24 @@ async function filterChecks(browser) {
   await page.keyboard.press('Shift+Tab');
   await page.keyboard.press('Enter');
   check((await visibleTypes()).length === 5, 'filter: Shift+Tab back to "All" and Enter shows everything');
+
+}
+
+async function filterChecks(browser) {
+  const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, reducedMotion: 'reduce' });
+  context.setDefaultTimeout(10000);
+  const page = await context.newPage();
+  await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
+
+  const visibleTypes = () =>
+    page.$$eval('[data-project-grid] > [data-type]', (items) =>
+      items.filter((item) => !item.hidden && item.getBoundingClientRect().height > 0).map((item) => item.dataset.type),
+    );
+
+  const filterShown = await page.isVisible('[data-filter-group]');
+  check(filterShown, 'filter: buttons appear once JavaScript runs');
+  check((await visibleTypes()).length === 5, 'filter: all five projects shown at first');
+  if (filterShown) await filterInteractions(page, visibleTypes);
 
   // Each card links to its case study.
   const links = await page.$$eval('[data-project-grid] a', (anchors) => anchors.map((a) => a.getAttribute('href')));

@@ -35,11 +35,8 @@ export interface UiStrings {
   a11y: {
     skipLink: string;
     opensNewTab: string;
-    homeLink: string;
     primaryNav: string;
     footerNav: string;
-    languageNav: string;
-    currentLanguage: string;
     switchTo: string;
   };
   nav: {
@@ -68,7 +65,6 @@ export interface UiStrings {
     delivery: string;
     includes: string;
     cta: string;
-    ctaLabel: string;
     items: Record<ServiceId, { title: string; description: string; features: string[] }>;
   };
   work: {
@@ -82,9 +78,7 @@ export interface UiStrings {
     showingOne: string;
     showingMany: string;
     personalProject: string;
-    featured: string;
     readCase: string;
-    readCaseLabel: string;
     builtWith: string;
   };
   experience: {
@@ -127,7 +121,6 @@ export interface UiStrings {
   };
   project: {
     back: string;
-    caseStudy: string;
     problem: string;
     solution: string;
     features: string;
@@ -179,11 +172,8 @@ export const ui: Record<Lang, UiStrings> = {
     a11y: {
       skipLink: 'Skip to content',
       opensNewTab: '(opens in a new tab)',
-      homeLink: '{name} — home',
       primaryNav: 'Main',
       footerNav: 'Footer',
-      languageNav: 'Language',
-      currentLanguage: 'Current language: {language}',
       switchTo: 'Read this page in {language}',
     },
     nav: {
@@ -218,7 +208,6 @@ export const ui: Record<Lang, UiStrings> = {
       delivery: 'Delivery from {days} days',
       includes: "What's included",
       cta: 'View gig on Fiverr',
-      ctaLabel: 'View the {service} gig on Fiverr',
       items: {
         websites: {
           title: 'Websites',
@@ -275,9 +264,7 @@ export const ui: Record<Lang, UiStrings> = {
       showingOne: 'Showing 1 project',
       showingMany: 'Showing {count} projects',
       personalProject: 'Personal project',
-      featured: 'Featured',
       readCase: 'Read case study',
-      readCaseLabel: 'Read the {title} case study',
       builtWith: 'Built with',
     },
     experience: {
@@ -364,7 +351,6 @@ export const ui: Record<Lang, UiStrings> = {
     },
     project: {
       back: 'All projects',
-      caseStudy: 'Case study',
       problem: 'The problem',
       solution: 'The solution',
       features: 'Key features',
@@ -414,11 +400,8 @@ export const ui: Record<Lang, UiStrings> = {
     a11y: {
       skipLink: 'Saltar al contenido',
       opensNewTab: '(se abre en una pestaña nueva)',
-      homeLink: '{name} — inicio',
       primaryNav: 'Principal',
       footerNav: 'Pie de página',
-      languageNav: 'Idioma',
-      currentLanguage: 'Idioma actual: {language}',
       switchTo: 'Leer esta página en {language}',
     },
     nav: {
@@ -453,7 +436,6 @@ export const ui: Record<Lang, UiStrings> = {
       delivery: 'Entrega desde {days} días',
       includes: 'Qué incluye',
       cta: 'Ver gig en Fiverr',
-      ctaLabel: 'Ver el gig de {service} en Fiverr',
       items: {
         websites: {
           title: 'Sitios web',
@@ -510,9 +492,7 @@ export const ui: Record<Lang, UiStrings> = {
       showingOne: 'Mostrando 1 proyecto',
       showingMany: 'Mostrando {count} proyectos',
       personalProject: 'Proyecto personal',
-      featured: 'Destacado',
       readCase: 'Ver caso de estudio',
-      readCaseLabel: 'Ver el caso de estudio de {title}',
       builtWith: 'Hecho con',
     },
     experience: {
@@ -599,7 +579,6 @@ export const ui: Record<Lang, UiStrings> = {
     },
     project: {
       back: 'Todos los proyectos',
-      caseStudy: 'Caso de estudio',
       problem: 'El problema',
       solution: 'La solución',
       features: 'Funciones clave',

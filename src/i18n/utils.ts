@@ -27,31 +27,10 @@ export function useTranslations(lang: Lang): UiStrings {
   return ui[lang];
 }
 
-export function isLang(value: string | undefined): value is Lang {
-  return value !== undefined && value in languages;
-}
-
-export function getLangFromUrl(url: URL): Lang {
-  const [, first] = url.pathname.split('/');
-  return isLang(first) ? first : defaultLang;
-}
-
-/** Strips the language prefix: `/es/projects/x/` → `/projects/x/`. */
-export function stripLang(pathname: string): string {
-  const [, first, ...rest] = pathname.split('/');
-  if (isLang(first) && first !== defaultLang) return `/${rest.join('/')}`;
-  return pathname;
-}
-
 /** Builds a path for a language: `('es', '/projects/x/')` → `/es/projects/x/`. */
 export function localizePath(lang: Lang, path: string): string {
   const clean = path.startsWith('/') ? path : `/${path}`;
   return lang === defaultLang ? clean : `/${lang}${clean}`;
-}
-
-/** The same page in another language. */
-export function translatePath(pathname: string, target: Lang): string {
-  return localizePath(target, stripLang(pathname));
 }
 
 export function formatPrice(amount: number, lang: Lang): string {
@@ -71,17 +50,5 @@ export function isPlaceholderUrl(url: string): boolean {
     return new URL(url).pathname.replace(/\/+$/, '') === '';
   } catch {
     return true;
-  }
-}
-
-/** Human-readable form of a profile link, e.g. `github.com/mateobuilds`. */
-export function displayUrl(url: string, fallbackHandle: string): string {
-  try {
-    const parsed = new URL(url);
-    const host = parsed.hostname.replace(/^www\./, '');
-    const path = parsed.pathname.replace(/\/+$/, '');
-    return path ? `${host}${path}` : `${host}/${fallbackHandle}`;
-  } catch {
-    return fallbackHandle;
   }
 }
