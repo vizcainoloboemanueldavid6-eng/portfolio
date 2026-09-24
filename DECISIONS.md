@@ -308,6 +308,24 @@ serving the same page at two URLs. Both `vercel.json` and `netlify.toml` mark th
 files in `/_astro/` as immutable. `netlify.toml` also sets the build command and the `dist`
 folder, so importing the repository needs no manual settings on either host.
 
+`vercel` run from a local folder uploads the source without reading `.gitignore`, and Vercel's
+default ignore list skips `.env.local` but not `.env`. A `.env` copied from `.env.example` would
+then ship `SITE_URL=https://mateobuilds.example.com`, and since an explicit `SITE_URL` wins over
+`VERCEL_PROJECT_PRODUCTION_URL`, every canonical would point at the fake domain. `.vercelignore`
+keeps `.env*` (and `dist/`, `docs/`, Lighthouse reports) out of CLI uploads. The origin read from
+the environment is also trimmed, because a value pasted or piped into a host's settings often
+carries a trailing newline.
+
+### Deployment guide: `docs/DEPLOY.es.md`, in Spanish
+
+The spec asks for "the commands to push to GitHub and deploy on Vercel" at the end. They live in
+a file the owner can follow later rather than only in a chat message: GitHub (empty repository,
+remote, first push), Vercel through the dashboard and through the CLI, when `SITE_URL` is needed
+and how to set it in both, a custom domain, and `curl` commands to verify the live site. It is in
+Spanish like the README, because the owner is its reader. The commands are PowerShell-first
+(the owner's machine is Windows) and include the one-line `PATH` fix for the portable Node and Git
+installs on that machine. Nothing in it was executed: no remote, push or deployment was made.
+
 ### How the numbers were measured
 
 `scripts/static-server.mjs` serves `dist/` with brotli/gzip and immutable caching on

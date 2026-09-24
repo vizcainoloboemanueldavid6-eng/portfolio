@@ -81,13 +81,14 @@ Abre <http://localhost:4330>. Los cambios se ven al guardar.
 | `npm run check`        | Comprobación de tipos de Astro/TypeScript                                       |
 | `npm run images`       | Optimiza las capturas de `media/projects/` hacia `public/projects/`             |
 | `npm run placeholders` | Genera portadas provisionales en SVG                                            |
-| `npm run checks`       | Más de 300 comprobaciones automáticas del sitio construido, en un navegador real |
+| `npm run checks`       | Más de 500 comprobaciones automáticas del sitio construido, en un navegador real |
 | `npm run audit`        | Lighthouse móvil sobre 4 páginas; falla si algo baja de 95                      |
 | `npm run shots`        | Capturas de pantalla a 375 y 1440 px en `docs/`                                 |
 | `npm run verify`       | `check` → `build` → `checks` → `audit`, en ese orden                            |
 
-`checks`, `audit` y `shots` necesitan antes `npm run build` y el navegador de Playwright
-(`npx playwright install chromium` la primera vez).
+`checks`, `audit` y `shots` necesitan antes `npm run build`. `checks` y `shots` usan el Chromium de
+Playwright 1.57 (`npx playwright install chromium` la primera vez en un equipo nuevo); `audit`
+usa Google Chrome instalado en el equipo (`LH_CHANNEL=chromium` para usar el de Playwright).
 
 ---
 
@@ -232,6 +233,10 @@ Optional Markdown: appears as "Behind the build" on the project page.
 
 ## 4. Publicar en Vercel o Netlify
 
+> **Guía completa paso a paso (GitHub + Vercel por el panel y por la terminal, `SITE_URL`,
+> dominio propio y cómo comprobar el sitio publicado): [`docs/DEPLOY.es.md`](docs/DEPLOY.es.md).**
+> Aquí va el resumen.
+
 El sitio es estático, y el repositorio ya incluye la configuración de los dos servicios
 (`vercel.json` y `netlify.toml`: comando de build, caché larga para los archivos de `/_astro/` y,
 en Vercel, redirección a las URLs con barra final).
@@ -328,7 +333,8 @@ media/projects/              capturas originales (entrada de `npm run images`)
 public/projects/             portadas y capturas optimizadas que sirve el sitio
 scripts/                     imágenes, portadas provisionales, capturas,
                              comprobaciones y Lighthouse
-docs/                        capturas del sitio a 375 y 1440 px
+docs/                        capturas del sitio a 375 y 1440 px y guía de despliegue
+                             (DEPLOY.es.md)
 ```
 
 Las decisiones técnicas y el porqué de cada una están en [DECISIONS.md](DECISIONS.md) (en inglés).
