@@ -91,7 +91,8 @@ async function main() {
       if (contended.length > 0) {
         notes.push(
           `${target.slug}: ${contended.length} of ${passes.length} passes excluded as contended ` +
-            `(main thread ${contended.map((pass) => pass.mainThread).join(', ')} ms vs best ${best} ms)`,
+            `(main thread ${contended.map((pass) => pass.mainThread).join(', ')} ms vs best ${best} ms; ` +
+            `their performance scores: ${contended.map((pass) => pass.scores.performance).join(', ')})`,
         );
       }
       if (clean.length < CLEAN_PASSES) {
