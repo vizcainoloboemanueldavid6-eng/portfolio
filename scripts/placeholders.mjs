@@ -1,10 +1,11 @@
 /**
  * Generates the SVG cover placeholders in public/projects/<slug>/cover.svg:
- * the project name and a one-line label on a coloured card, drawn as outlines
- * so they look the same in every browser.
+ * the project name on a card in the project's colour, drawn as outlines so it
+ * looks the same in every browser. Only the name, which reads the same in
+ * English and Spanish, so one file serves both languages.
  *
  *   npm run placeholders                      regenerate the built-in list below
- *   npm run placeholders -- my-app "My App" "Booking web app" "#0EA5E9"
+ *   npm run placeholders -- my-app "My App" "#0EA5E9"
  *                                             create one for a new project
  *
  * Replace a placeholder by a real screenshot whenever you have one — see the
@@ -12,16 +13,18 @@
  */
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { paragraph, wrap } from '../src/lib/glyphs.ts';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const WIDTH = 1200;
 const HEIGHT = 750;
 
-const defaults = [
-  { slug: 'tabzen', title: 'TabZen', label: 'Tab manager Chrome extension', color: '#5B5BD6' },
-  { slug: 'quicknotes', title: 'QuickNotes', label: 'Web notes & highlighter extension', color: '#F2B705' },
-  { slug: 'stockflow', title: 'StockFlow', label: 'Inventory management web app', color: '#2563EB' },
+/** Projects 03–05, in their own brand colours (from their specifications). */
+export const PLACEHOLDERS = [
+  { slug: 'tabzen', title: 'TabZen', color: '#5B5BD6' },
+  { slug: 'quicknotes', title: 'QuickNotes', color: '#F2B705' },
+  { slug: 'stockflow', title: 'StockFlow', color: '#2563EB' },
 ];
 
 function luminance(hex) {
@@ -38,16 +41,17 @@ function mix(hex, other, amount) {
     .join('')}`;
 }
 
-export function placeholderSvg({ title, label, color }) {
+export function placeholderSvg({ title, color }) {
   const light = luminance(color) > 0.35;
   const ink = light ? '#15161C' : '#FFFFFF';
   const deep = mix(color, '#0B0C10', light ? 0.25 : 0.55);
 
   const titleSize = title.length > 12 ? 104 : 128;
+  const lineHeight = titleSize * 1.02;
   const titleLines = wrap(title, titleSize, WIDTH - 200, 700, 2);
-  const labelLines = wrap(label, 40, WIDTH - 200, 500, 2);
-  const blockHeight = titleLines.length * titleSize * 1.02 + 36 + labelLines.length * 52;
-  const top = (HEIGHT - blockHeight) / 2 + titleSize * 0.8;
+  // Optical centre: the cap height of Space Grotesk is about 0.7 em.
+  const blockHeight = (titleLines.length - 1) * lineHeight + titleSize * 0.7;
+  const top = (HEIGHT - blockHeight) / 2 + titleSize * 0.7;
 
   const dots = [];
   for (let x = 40; x < WIDTH; x += 40) {
@@ -63,8 +67,7 @@ export function placeholderSvg({ title, label, color }) {
 <rect width="${WIDTH}" height="${HEIGHT}" fill="url(#glow)"/>
 <path d="${dots.join('')}" fill="${ink}" fill-opacity="0.16"/>
 <rect x="60" y="60" width="${WIDTH - 120}" height="${HEIGHT - 120}" rx="28" fill="none" stroke="${ink}" stroke-opacity="0.22" stroke-width="2"/>
-${paragraph(titleLines, { x: WIDTH / 2, y: top, size: titleSize, weight: 700, fill: ink, anchor: 'middle', lineHeight: titleSize * 1.02 })}
-${paragraph(labelLines, { x: WIDTH / 2, y: top + (titleLines.length - 1) * titleSize * 1.02 + 36 + 40, size: 40, weight: 500, fill: ink, anchor: 'middle', opacity: 0.86, lineHeight: 52 })}
+${paragraph(titleLines, { x: WIDTH / 2, y: top, size: titleSize, weight: 700, fill: ink, anchor: 'middle', lineHeight })}
 </svg>
 `;
 }
@@ -79,13 +82,16 @@ async function write({ slug, ...rest }) {
   console.log(`  ${path.relative(ROOT, file)}`);
 }
 
-const [slug, title, label, color = '#7C5CFF'] = process.argv.slice(2);
-if (slug) {
-  if (!title || !label) {
-    console.error('Usage: npm run placeholders -- <slug> "<Title>" "<One-line label>" [#RRGGBB]');
-    process.exit(1);
+// Run only when called as a script (scripts/checks.mjs imports the generator).
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const [slug, title, color = '#7C5CFF'] = process.argv.slice(2);
+  if (slug) {
+    if (!title) {
+      console.error('Usage: npm run placeholders -- <slug> "<Title>" [#RRGGBB]');
+      process.exit(1);
+    }
+    await write({ slug, title, color });
+  } else {
+    for (const item of PLACEHOLDERS) await write(item);
   }
-  await write({ slug, title, label, color });
-} else {
-  for (const item of defaults) await write(item);
 }
