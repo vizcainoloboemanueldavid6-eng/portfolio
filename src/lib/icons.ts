@@ -31,6 +31,46 @@ export function stackIcon(name: string): BrandIcon | null {
   return icon?.path ? icon : null;
 }
 
+type Rgb = [number, number, number];
+
+const hexToRgb = (hex: string): Rgb => {
+  const value = Number.parseInt(hex.replace('#', ''), 16);
+  return [(value >> 16) & 255, (value >> 8) & 255, value & 255];
+};
+
+const luminance = ([r, g, b]: Rgb): number => {
+  const [lr, lg, lb] = [r, g, b].map((channel) => {
+    const c = channel / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  }) as Rgb;
+  return 0.2126 * lr + 0.7152 * lg + 0.0722 * lb;
+};
+
+const contrast = (a: Rgb, b: Rgb): number => {
+  const [light, dark] = [luminance(a), luminance(b)].sort((x, y) => y - x) as [number, number];
+  return (light + 0.05) / (dark + 0.05);
+};
+
+/** The lightest point of the card gradient the tech icons sit on. */
+const CARD_BACKGROUND = hexToRgb('#1d1e25');
+
+/**
+ * The brand colour an icon takes on hover, mixed with as little white as
+ * possible to reach 3:1 against the card (WCAG's bar for graphics). Brands
+ * with a near-black mark (Next.js, GitHub, Vercel…) come out as a light grey
+ * instead of disappearing into the dark background. Computed at build time.
+ */
+export function brandHoverColor(hex: string): string {
+  const brand = hexToRgb(hex);
+  for (let white = 0.3; white <= 1; white += 0.05) {
+    const mixed = brand.map((channel) => Math.round(channel * (1 - white) + 255 * white)) as Rgb;
+    if (contrast(mixed, CARD_BACKGROUND) >= 3) {
+      return `#${mixed.map((channel) => channel.toString(16).padStart(2, '0')).join('')}`;
+    }
+  }
+  return '#ffffff';
+}
+
 /**
  * Looks an icon up by its Simple Icons slug (https://simpleicons.org), e.g.
  * `nextdotjs` or `tailwindcss`. Runs at build time only: the page receives

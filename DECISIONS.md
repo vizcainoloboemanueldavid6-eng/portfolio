@@ -222,6 +222,19 @@ Grotesk 108.4 % / 90.78 % / 26.94 %), so the swap barely moves the text. Measure
 For a site of a dozen pages, the lost cross-page caching is worth less than the faster first
 paint.
 
+### Tech stack icons: Simple Icons, inlined at build time
+
+The spec asks for Simple Icons as inline SVG. The `simple-icons` package (pinned) is imported only
+in the frontmatter of Astro components, so each page receives just the `<path>` of the icons it
+shows, with no icon font, sprite request or client-side JavaScript. The slugs live in
+`profile.ts → techStack` and an unknown slug stops the build with a message pointing at
+simpleicons.org. The same lookup puts a small mark next to each technology on the project pages
+when one exists (a few names are aliased, e.g. "Chrome Extensions API" → Google Chrome). Icons are
+monochrome (`currentColor`) at rest; on hover they take the brand colour, lightened at build time
+just enough to keep 3:1 against the card, so near-black marks (Next.js, GitHub, Vercel) turn light
+grey instead of vanishing. They are decorative (`aria-hidden`) because the name is always written
+next to them.
+
 ### Mobile menu: a native `<details>`
 
 It opens and closes without JavaScript, is keyboard operable and announces its state. A few
@@ -298,10 +311,15 @@ folder, so importing the repository needs no manual settings on either host.
 
 `scripts/static-server.mjs` serves `dist/` with brotli/gzip and immutable caching on
 `/_astro/`, like Vercel and Netlify do, and answers unknown paths with `404.html` and status 404.
-`npm run audit` runs Lighthouse's mobile preset at least three times per page and reports the
-median of the passes whose main-thread time is within 1.5× of that page's best pass; excluded
-passes are printed. Other projects were being built on the same laptop at the same time, which is
-exactly the noise this rule exists for.
+`npm run audit` runs Lighthouse's mobile preset in the installed Google Chrome (the browser
+visitors actually use; `LH_CHANNEL=chromium` switches to Playwright's Chromium) three times per
+page, up to five when the passes disagree (a category straddles 95, or performance spreads by more
+than 5 points), and reports the median of every pass. No pass is ever excluded: an earlier version
+dropped passes with an unusually long main thread as "contended", which made the number easier to
+defend but harder to trust. Each pass's performance score and main-thread time are printed instead,
+so a run slowed down by other work on the laptop (other projects were being built at the same
+time) is visible and can simply be repeated. The last HTML report per page and a `summary.json`
+go to `lighthouse/`.
 
 All scripts use ports 4330–4339 (dev 4330, preview 4332, screenshots 4333, checks 4335,
 Lighthouse 4336 with the browser's debugging port on 4339).

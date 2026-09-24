@@ -2,7 +2,7 @@
 import { profile } from '../../config/profile';
 import type { Lang } from '../../i18n/ui';
 import { useTranslations } from '../../i18n/utils';
-import { brandIcon } from '../../lib/icons';
+import { brandHoverColor, brandIcon } from '../../lib/icons';
 import BrandIcon from '../BrandIcon.astro';
 import SectionHeading from '../SectionHeading.astro';
 
@@ -21,7 +21,7 @@ const icons = profile.techStack.map((slug) => brandIcon(slug));
   <ul class="mt-12 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5">
     {
       icons.map((icon) => (
-        <li class="tech card flex items-center gap-3 px-4 py-3.5" style={`--brand: #${icon.hex}`}>
+        <li class="tech card flex items-center gap-3 px-4 py-3.5" style={`--brand: ${brandHoverColor(icon.hex)}`}>
           <BrandIcon icon={icon} size={22} class="tech-icon shrink-0" />
           <span class="text-sm font-medium">{icon.title}</span>
         </li>
@@ -49,8 +49,8 @@ const icons = profile.techStack.map((slug) => brandIcon(slug));
     border-color: var(--color-line-strong);
   }
 
-  /* Brand colours only on hover, and never the near-black ones that would vanish on this background. */
+  /* Brand colours only on hover, lightened at build time to keep 3:1 on the card (see lib/icons.ts). */
   .tech:hover :global(.tech-icon) {
-    color: color-mix(in srgb, var(--brand) 70%, white);
+    color: var(--brand);
   }
 </style>

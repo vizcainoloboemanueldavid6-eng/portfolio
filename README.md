@@ -56,7 +56,8 @@ varias pasadas por página, `npm run audit`):
 | Caso de estudio (EN)          | 100         | 100           | 100              | 100 |
 | Caso de estudio (ES)          | 100         | 100           | 100              | 100 |
 
-LCP ≈ 1,6 s, TBT 0 ms y CLS 0 en móvil simulado. En otra máquina los números pueden variar
+LCP ≈ 1,7–1,9 s, TBT 0 ms y CLS 0 en móvil simulado (Lighthouse 13.5 en Google Chrome, mediana de
+todas las pasadas, sin descartar ninguna). En otra máquina los números pueden variar
 unos puntos: el rendimiento depende de lo ocupada que esté la CPU mientras se mide.
 
 ---
