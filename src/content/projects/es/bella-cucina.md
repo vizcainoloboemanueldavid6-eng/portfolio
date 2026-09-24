@@ -11,7 +11,7 @@ coverAlt: Página de inicio de Bella Cucina en una pantalla de escritorio, con e
 order: 1
 featured: true
 problem: >-
-  Un restaurante pequeño necesita un solo lugar donde los clientes puedan leer la carta, ver el
+  Un restaurante pequeño necesita un solo lugar donde los comensales puedan leer la carta, ver el
   local y reservar mesa desde el móvil, sin instalar una app, sin crear una cuenta y sin que el
   restaurante pague una cuota mensual a una plataforma de reservas. Los atajos habituales hacen lo
   contrario: una carta en PDF ilegible en el teléfono, fotos que pesan varios megas con datos móviles
