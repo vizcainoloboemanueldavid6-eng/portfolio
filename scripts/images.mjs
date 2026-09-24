@@ -10,7 +10,10 @@
  *   public/projects/<slug>/<name>-1280.avif <name>-1280.webp
  *   public/projects/<slug>/<name>.webp      (the largest size, the plain fallback)
  * — never upscaling — and records the sizes in src/data/images.json, which is
- * what lets <ProjectImage> print a correct srcset, width and height.
+ * what lets <ProjectImage> print a correct srcset, width and height. The
+ * manifest also keeps a hash of the plain <name>.webp: if that file is later
+ * replaced by hand, the page serves the new file as it is instead of the old
+ * variants.
  *
  * In the Markdown, reference the image by its plain fallback:
  *   cover: /projects/<slug>/<name>.webp
@@ -18,6 +21,7 @@
  * Screenshots are best at 16:10 (for example 1440×900); other ratios work, the
  * cards crop them to 16:10 from the top.
  */
+import { createHash } from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import sharp from 'sharp';
@@ -73,13 +77,12 @@ async function main() {
           .webp({ quality: 78, effort: 6 })
           .toFile(path.join(outDir, `${name}-${width}.webp`));
       }
-      await fs.copyFile(
-        path.join(outDir, `${name}-${largest}.webp`),
-        path.join(outDir, `${name}.webp`),
-      );
+      const plain = path.join(outDir, `${name}.webp`);
+      await fs.copyFile(path.join(outDir, `${name}-${largest}.webp`), plain);
+      const hash = createHash('sha256').update(await fs.readFile(plain)).digest('hex').slice(0, 16);
 
       const height = Math.round((meta.height * largest) / meta.width);
-      manifest[`/projects/${slug}/${name}`] = { width: largest, height, widths };
+      manifest[`/projects/${slug}/${name}`] = { width: largest, height, widths, hash };
       count += 1;
       console.log(`  ${slug}/${name}  ${widths.join(', ')} px`);
     }
