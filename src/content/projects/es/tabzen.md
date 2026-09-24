@@ -31,14 +31,13 @@ features:
 ---
 
 **Permisos justificados uno a uno.** TabZen pide `tabs`, `tabGroups`, `storage`, `alarms` y
-`contextMenus`, y nada más: ni `<all_urls>` ni permisos de host. Cada uno se explica en la política
-de privacidad que acompaña a la extensión.
+`contextMenus`, y nada más: ni `<all_urls>` ni permisos de host. Cada uno está justificado en la
+documentación del proyecto, y un test unitario hace fallar el build si el manifiesto pide alguno más.
 
 **Lógica que se puede probar.** Agrupar, buscar y serializar sesiones son funciones puras,
 separadas de las llamadas a `chrome.*`, así que están cubiertas por tests unitarios con Vitest,
 incluidas las reglas que impiden suspender pestañas fijadas, con audio o de sitios en la lista
 blanca.
 
-**Lista para la Chrome Web Store.** La interfaz está en inglés con `_locales` preparado para
-español, y el proyecto incluye los textos de la ficha de la tienda, capturas de 1280×800, una imagen
-promocional y un script `npm run zip` que empaqueta la versión.
+**Empaquetada para la Chrome Web Store.** La interfaz está en inglés con `_locales` preparado para
+español, y un script `npm run zip` empaqueta la versión.

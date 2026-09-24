@@ -4,8 +4,8 @@ tagline: 5-page business website with blog
 summary: A five-page website for a personal trainer, with pricing plans, a Markdown-powered blog, an about page that builds trust and a validated contact form.
 type: website
 stack: [Next.js, TypeScript, Tailwind CSS, React, MDX, sharp]
-liveUrl: https://fitcoach-pro-mu.vercel.app
-repoUrl: '#' # TODO: add the public repository URL once it exists
+liveUrl: https://fitcoach-pro-mu.vercel.app # TODO: this project's live site (already deployed) — update it if the address changes
+repoUrl: https://github.com/vizcainoloboemanueldavid6-eng/fitcoach-pro # TODO: this project's repository — keep it on the same GitHub account as profile.links.github
 cover: /projects/fitcoach-pro/cover.webp
 coverAlt: FitCoach Pro home page on a desktop screen, with a bold "Get stronger" headline in lime and white on a dark background
 order: 2

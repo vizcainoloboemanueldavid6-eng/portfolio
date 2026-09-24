@@ -31,13 +31,12 @@ features:
 ---
 
 **Permissions, justified one by one.** TabZen asks for `tabs`, `tabGroups`, `storage`, `alarms`
-and `contextMenus`, and nothing else: no `<all_urls>`, no host permissions. Each one is explained
-in the privacy policy that ships with the extension.
+and `contextMenus`, and nothing else: no `<all_urls>`, no host permissions. Each one is justified
+in the project's documentation, and a unit test fails the build if the manifest ever asks for more.
 
 **Logic you can test.** Grouping, searching and serialising sessions are pure functions, kept
 apart from the `chrome.*` calls, so they are covered by Vitest unit tests, including the rules that
 stop the extension from suspending pinned tabs, tabs playing audio and whitelisted sites.
 
-**Ready for the Chrome Web Store.** The interface is in English with `_locales` prepared for
-Spanish, and the project includes the store listing texts, 1280×800 screenshots, a promotional
-tile and an `npm run zip` script that packages the release.
+**Packaged for the Chrome Web Store.** The interface is in English with `_locales` prepared for
+Spanish, and an `npm run zip` script packages the release.

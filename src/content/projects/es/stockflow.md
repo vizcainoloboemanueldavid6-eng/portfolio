@@ -39,6 +39,7 @@ sesión. Los datos de la demo se reinician con un solo comando.
 entrada en el servidor con los mismos esquemas que usan los formularios, el inicio de sesión tiene
 límite de intentos y los secretos viven en variables de entorno con un `.env.example` completo.
 
-**Probada de principio a fin.** Vitest cubre las reglas de negocio, incluida la que impide que el
-stock quede en negativo, y Playwright recorre los flujos principales en un navegador real, incluido
-un usuario Staff que intenta borrar un producto y no puede.
+**Probada de principio a fin.** Vitest cubre las reglas de negocio, incluidas la que impide que el
+stock quede en negativo y la que prohíbe al rol Staff borrar nada. Playwright recorre los flujos
+principales en un navegador real con cada rol, incluido un usuario Staff al que la aplicación no le
+ofrece ninguna forma de archivar ni borrar un producto.

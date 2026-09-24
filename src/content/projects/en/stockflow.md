@@ -40,5 +40,6 @@ the server with the same schemas the forms use, the login is rate limited, and s
 environment variables with a complete `.env.example`.
 
 **Tested end to end.** Vitest covers the business rules, including the one that keeps stock from
-going negative, and Playwright drives the main flows in a real browser, including a staff user
-trying, and failing, to delete a product.
+going negative, and the rule that staff can never delete anything. Playwright drives the main flows
+in a real browser as each role, including a staff user who is offered no way to archive or delete a
+product.

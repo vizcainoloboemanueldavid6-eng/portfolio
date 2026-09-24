@@ -4,8 +4,8 @@ tagline: Restaurant landing page
 summary: A one-page site for an Italian restaurant, with a tabbed menu, a photo gallery and a booking form that hands the reservation straight to WhatsApp.
 type: website
 stack: [Next.js, TypeScript, Tailwind CSS, React, sharp, OpenStreetMap]
-liveUrl: https://bella-cucina-steel.vercel.app
-repoUrl: https://github.com/vizcainoloboemanueldavid6-eng/bella-cucina
+liveUrl: https://bella-cucina-steel.vercel.app # TODO: this project's live site (already deployed) — update it if the address changes
+repoUrl: https://github.com/vizcainoloboemanueldavid6-eng/bella-cucina # TODO: this project's repository — keep it on the same GitHub account as profile.links.github
 cover: /projects/bella-cucina/cover.webp
 coverAlt: Bella Cucina home page on a desktop screen, with the headline over a dimly lit restaurant dining room
 order: 1
