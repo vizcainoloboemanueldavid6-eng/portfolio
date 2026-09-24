@@ -7,6 +7,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { chromium } from 'playwright';
+import { sampleProjectPages } from './lib/content.mjs';
 import { startStaticServer } from './static-server.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
@@ -14,11 +15,13 @@ const DIST = path.join(ROOT, 'dist');
 const DOCS = path.join(ROOT, 'docs');
 const PORT = Number(process.env.SHOTS_PORT) || 4333;
 
+// Case studies from the content folder: the first project in English, the last in Spanish.
+const samples = await sampleProjectPages();
 const pages = [
   { name: 'home', url: '/' },
   { name: 'home-es', url: '/es/' },
-  { name: 'project', url: '/projects/bella-cucina/' },
-  { name: 'project-es', url: '/es/projects/stockflow/' },
+  { name: 'project', url: samples.en },
+  { name: 'project-es', url: samples.es },
   { name: '404', url: '/this-page-does-not-exist/' },
 ];
 

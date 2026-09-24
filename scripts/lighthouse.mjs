@@ -20,6 +20,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import lighthouse from 'lighthouse';
 import { chromium } from 'playwright';
+import { sampleProjectPages } from './lib/content.mjs';
 import { startStaticServer } from './static-server.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
@@ -33,11 +34,14 @@ const MIN_PASSES = 3;
 const MAX_PASSES = 5;
 const CATEGORIES = ['performance', 'accessibility', 'best-practices', 'seo'];
 
+// The case studies come from the content folder (first project in English,
+// last in Spanish), so renaming or removing a project needs no change here.
+const samples = await sampleProjectPages();
 const pages = [
   { slug: 'home', url: '/' },
   { slug: 'home-es', url: '/es/' },
-  { slug: 'project', url: '/projects/bella-cucina/' },
-  { slug: 'project-es', url: '/es/projects/tabzen/' },
+  { slug: 'project', url: samples.en },
+  { slug: 'project-es', url: samples.es },
 ];
 
 const median = (values) => [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)];

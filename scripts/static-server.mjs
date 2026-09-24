@@ -34,14 +34,25 @@ const TYPES = {
 
 const COMPRESSIBLE = new Set(['.html', '.css', '.js', '.json', '.webmanifest', '.xml', '.txt', '.svg']);
 
-export async function startStaticServer({ root, port }) {
+class BadRequest extends Error {}
+
+export async function startStaticServer({ root: rootDir, port }) {
+  const root = path.resolve(rootDir);
+
   async function resolveFile(urlPath) {
-    const clean = decodeURIComponent(new URL(urlPath, 'http://localhost').pathname);
+    let clean;
+    try {
+      clean = decodeURIComponent(new URL(urlPath, 'http://localhost').pathname);
+    } catch {
+      // A malformed %-escape (e.g. /%E0%A4%A) or an unparsable URL.
+      throw new BadRequest(urlPath);
+    }
     const candidates = clean.endsWith('/')
       ? [path.join(root, clean, 'index.html')]
       : [path.join(root, clean), path.join(root, clean, 'index.html')];
     for (const candidate of candidates) {
-      if (!candidate.startsWith(root)) continue;
+      // Inside root only: `dist-old/` next to `dist/` must not match either.
+      if (!candidate.startsWith(root + path.sep)) continue;
       try {
         if ((await fs.stat(candidate)).isFile()) return candidate;
       } catch {
@@ -51,7 +62,16 @@ export async function startStaticServer({ root, port }) {
     return null;
   }
 
-  const server = http.createServer(async (request, response) => {
+  const server = http.createServer((request, response) => {
+    handle(request, response).catch((error) => {
+      const status = error instanceof BadRequest ? 400 : 500;
+      if (status === 500) console.error(error);
+      if (!response.headersSent) response.writeHead(status, { 'Content-Type': 'text/plain; charset=utf-8' });
+      response.end(status === 400 ? 'Bad request' : 'Internal server error');
+    });
+  });
+
+  async function handle(request, response) {
     let file = await resolveFile(request.url ?? '/');
     let status = 200;
     if (!file) {
@@ -84,7 +104,7 @@ export async function startStaticServer({ root, port }) {
     headers['Content-Length'] = body.length;
     response.writeHead(status, headers);
     response.end(request.method === 'HEAD' ? undefined : body);
-  });
+  }
 
   await new Promise((resolve) => server.listen(port, '127.0.0.1', resolve));
   return server;
