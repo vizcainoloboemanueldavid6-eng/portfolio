@@ -231,9 +231,10 @@ shows, with no icon font, sprite request or client-side JavaScript. The slugs li
 simpleicons.org. The same lookup puts a small mark next to each technology on the project pages
 when one exists (a few names are aliased, e.g. "Chrome Extensions API" → Google Chrome). Icons are
 monochrome (`currentColor`) at rest; on hover they take the brand colour, lightened at build time
-just enough to keep 3:1 against the card, so near-black marks (Next.js, GitHub, Vercel) turn light
-grey instead of vanishing. They are decorative (`aria-hidden`) because the name is always written
-next to them.
+just enough to keep 3:1 against the card. Near-black, hueless marks (Next.js, GitHub, Vercel, Prisma:
+under 2:1 against the card) keep the text colour on hover, because lightening black only yields a grey
+that is dimmer than the icon at rest and looks disabled. They are decorative (`aria-hidden`)
+because the name is always written next to them.
 
 ### Mobile menu: a native `<details>`
 

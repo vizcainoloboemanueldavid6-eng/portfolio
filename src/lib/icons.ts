@@ -56,12 +56,18 @@ const CARD_BACKGROUND = hexToRgb('#1d1e25');
 
 /**
  * The brand colour an icon takes on hover, mixed with as little white as
- * possible to reach 3:1 against the card (WCAG's bar for graphics). Brands
- * with a near-black mark (Next.js, GitHub, Vercel…) come out as a light grey
- * instead of disappearing into the dark background. Computed at build time.
+ * possible to reach 3:1 against the card (WCAG's bar for graphics). Computed
+ * at build time.
+ *
+ * Brands whose mark is near-black and colourless (Next.js, GitHub, Vercel,
+ * Prisma) have no colour to show on a dark card: lightening them only produces a grey that is
+ * dimmer than the icon at rest and reads as "disabled". They keep the text
+ * colour on hover instead.
  */
 export function brandHoverColor(hex: string): string {
   const brand = hexToRgb(hex);
+  const chroma = Math.max(...brand) - Math.min(...brand);
+  if (contrast(brand, CARD_BACKGROUND) < 2 && chroma < 48) return 'var(--color-fg)';
   for (let white = 0.3; white <= 1; white += 0.05) {
     const mixed = brand.map((channel) => Math.round(channel * (1 - white) + 255 * white)) as Rgb;
     if (contrast(mixed, CARD_BACKGROUND) >= 3) {
