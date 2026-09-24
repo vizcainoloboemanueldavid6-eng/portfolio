@@ -10,6 +10,7 @@ import Header from '../components/Header.astro';
 import Seo, { type SeoImage } from '../components/Seo.astro';
 import type { Lang } from '../i18n/ui';
 import { useTranslations } from '../i18n/utils';
+import { manifestPath } from '../lib/manifest';
 
 interface Props {
   lang: Lang;
@@ -41,7 +42,7 @@ const switchTo = alternates?.[otherLang] ?? (otherLang === 'en' ? '/' : '/es/');
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="manifest" href={manifestPath(lang)} />
     <meta name="theme-color" content="#0b0c10" />
     <meta name="color-scheme" content="dark" />
     <meta name="generator" content={Astro.generator} />

@@ -56,7 +56,14 @@ const { label } = Astro.props;
       )
     }
   </div>
-  <span class="avatar-dot absolute bottom-[8%] right-[8%] h-[12%] w-[12%] rounded-full border-4 border-ink bg-secondary" aria-hidden="true"></span>
+  {
+    profile.available && (
+      <span
+        class="avatar-dot absolute bottom-[8%] right-[8%] h-[12%] w-[12%] rounded-full border-4 border-ink bg-secondary"
+        aria-hidden="true"
+      />
+    )
+  }
 </div>
 
 <style>

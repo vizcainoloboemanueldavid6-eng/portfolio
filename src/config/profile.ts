@@ -39,8 +39,8 @@ export interface Profile {
   services: Record<ServiceId, Service>;
   /** Simple Icons slugs (https://simpleicons.org) shown in the Tech stack section. */
   techStack: string[];
-  /** Topics for the JSON-LD `knowsAbout` property. */
-  knowsAbout: string[];
+  /** Topics for the JSON-LD `knowsAbout` property, in each language. */
+  knowsAbout: { en: string[]; es: string[] };
 }
 
 export const profile: Profile = {
@@ -54,7 +54,7 @@ export const profile: Profile = {
   email: 'hello@example.com', // TODO: replace with your real data
   photo: '', // TODO: replace with your real data — e.g. '/avatar.webp' (square, 400×400)
   initials: 'MR', // TODO: replace with your real data
-  available: true, // TODO: replace with your real data — false hides the "available" badge
+  available: true, // TODO: replace with your real data — false hides the "available" badge and the avatar's green dot
   responseHours: 24, // TODO: replace with your real data
   supportDays: 30, // TODO: replace with your real data
   links: {
@@ -100,16 +100,30 @@ export const profile: Profile = {
     'vercel',
     'netlify',
   ], // TODO: replace with your real data
-  knowsAbout: [
-    'Web development',
-    'Landing pages',
-    'Chrome extensions',
-    'Web applications',
-    'TypeScript',
-    'React',
-    'Next.js',
-    'Astro',
-    'Accessibility',
-    'Technical SEO',
-  ], // TODO: replace with your real data
+  knowsAbout: {
+    en: [
+      'Web development',
+      'Landing pages',
+      'Chrome extensions',
+      'Web applications',
+      'TypeScript',
+      'React',
+      'Next.js',
+      'Astro',
+      'Accessibility',
+      'Technical SEO',
+    ], // TODO: replace with your real data
+    es: [
+      'Desarrollo web',
+      'Landing pages',
+      'Extensiones de Chrome',
+      'Aplicaciones web',
+      'TypeScript',
+      'React',
+      'Next.js',
+      'Astro',
+      'Accesibilidad',
+      'SEO técnico',
+    ], // TODO: replace with your real data
+  },
 };

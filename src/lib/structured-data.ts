@@ -26,7 +26,7 @@ export function personJsonLd(site: URL, lang: Lang, description: string): Record
     image: profile.photo
       ? new URL(profile.photo, site).href
       : new URL('/icon-512.png', site).href,
-    knowsAbout: profile.knowsAbout,
+    knowsAbout: profile.knowsAbout[lang],
     ...(sameAs.length > 0 ? { sameAs } : {}),
   };
 }

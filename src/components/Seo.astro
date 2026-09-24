@@ -51,7 +51,8 @@ const serialize = (value: unknown) => JSON.stringify(value).replace(/</g, '\\u00
 <meta property="og:site_name" content={profile.name} />
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
-<meta property="og:url" content={canonical} />
+{/* Like the canonical, left out of noindex pages: the 404 page has no URL of its own. */}
+{!noindex && <meta property="og:url" content={canonical} />}
 <meta property="og:locale" content={t.meta.locale} />
 {otherLocales.map((locale) => <meta property="og:locale:alternate" content={locale} />)}
 <meta property="og:image" content={imageUrl} />
