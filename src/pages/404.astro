@@ -1,0 +1,49 @@
+---
+/**
+ * One 404 page for both languages (static hosts serve a single 404.html):
+ * English first, with the Spanish version right under it.
+ */
+import Icon from '../components/Icon.astro';
+import { ui } from '../i18n/ui';
+import { fill } from '../i18n/utils';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const en = ui.en;
+const es = ui.es;
+---
+
+<BaseLayout
+  lang="en"
+  title={fill(en.meta.notFoundTitle)}
+  description={fill(en.meta.notFoundDescription)}
+  image={{ path: '/og/en.png', alt: fill(en.meta.ogHomeAlt), width: 1200, height: 630 }}
+  noindex
+>
+  <section class="container-page grid min-h-[60vh] place-items-center py-24 text-center" aria-labelledby="nf-title">
+    <div>
+      <p class="font-display text-[7rem] font-bold leading-none text-gradient sm:text-[10rem]" aria-hidden="true">
+        404
+      </p>
+      <p class="eyebrow mt-6 justify-center">{en.notFound.eyebrow}</p>
+      <h1 id="nf-title" class="mt-4 text-4xl font-bold sm:text-5xl">{en.notFound.title}</h1>
+      <p class="mx-auto mt-4 max-w-md text-lg text-muted">{en.notFound.text}</p>
+      <div class="mt-8 flex flex-wrap justify-center gap-3">
+        <a href="/" class="btn btn-primary">
+          <Icon name="arrow-left" size={18} />
+          {en.notFound.home}
+        </a>
+        <a href="/#work" class="btn btn-ghost">{en.notFound.work}</a>
+      </div>
+
+      <div lang="es" class="mx-auto mt-14 max-w-md border-t border-line pt-8">
+        <h2 class="text-2xl font-bold">{es.notFound.title}</h2>
+        <p class="mt-3 text-muted">{es.notFound.text}</p>
+        <a href="/es/" class="btn btn-ghost mt-6">
+          <Icon name="arrow-left" size={18} />
+          {es.notFound.home}
+        </a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
