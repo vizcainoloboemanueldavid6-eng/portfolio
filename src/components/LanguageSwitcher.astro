@@ -12,6 +12,10 @@ interface Props {
   class?: string;
 }
 
+/*
+ * Compact: phones see "ES" and hear "ES Español". The visible label stays part of the accessible
+ * name (WCAG 2.5.3 Label in Name), so "click ES" works with speech input.
+ */
 const { lang, href, compact = false, class: className = '' } = Astro.props;
 const other: Lang = lang === 'en' ? 'es' : 'en';
 const title = fill(useTranslations(other).a11y.switchTo, { language: languages[other] });
@@ -32,9 +36,7 @@ const title = fill(useTranslations(other).a11y.switchTo, { language: languages[o
   {
     compact ? (
       <>
-        <span class="uppercase sm:hidden" aria-hidden="true">
-          {other}
-        </span>
+        <span class="uppercase sm:hidden">{other}</span>
         <span class="max-sm:sr-only">{languages[other]}</span>
       </>
     ) : (

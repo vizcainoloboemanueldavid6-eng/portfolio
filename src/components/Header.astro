@@ -11,6 +11,14 @@ interface Props {
   isHome: boolean;
 }
 
+/*
+ * - The background is 90 % opaque even with backdrop blur: the light Bella Cucina screenshots
+ *   scrolling underneath must not wash the muted nav links below 4.5:1 (scripts/checks.mjs).
+ * - The full nav needs about 870 px in Spanish, so it starts at lg (1024 px); below that the
+ *   menu button takes over, and the "Hire me" button always fits.
+ * - The logo mark's initials are part of the link's name ("MR mateobuilds"): below 360 px they
+ *   are the only visible text, and a visible label must be in the accessible name.
+ */
 const { lang, switchTo, isHome } = Astro.props;
 const t = useTranslations(lang);
 const home = localizePath(lang, '/');
@@ -25,16 +33,16 @@ const links = [
 ---
 
 <header
-  class="sticky top-0 z-40 border-b border-line bg-ink/80 backdrop-blur-md supports-[backdrop-filter]:bg-ink/65"
+  class="sticky top-0 z-40 border-b border-line bg-ink/90 backdrop-blur-md"
   transition:animate="none"
 >
   <div class="container-page flex h-16 items-center justify-between gap-3">
     <a href={home} class="group flex shrink-0 items-center gap-2.5 rounded-lg font-display text-[1.05rem] font-semibold tracking-tight">
-      <span class="logo-mark" aria-hidden="true">{profile.initials}</span>
+      <span class="logo-mark">{profile.initials}</span>
       <span class="max-[359px]:sr-only">{profile.username}</span>
     </a>
 
-    <nav aria-label={t.a11y.primaryNav} class="hidden md:block">
+    <nav aria-label={t.a11y.primaryNav} class="hidden lg:block">
       <ul class="flex items-center gap-1">
         {
           links.map((link) => (
@@ -63,7 +71,7 @@ const links = [
         <span class="sr-only">{t.a11y.opensNewTab}</span>
       </a>
 
-      <details class="mobile-menu relative md:hidden" data-mobile-menu>
+      <details class="mobile-menu relative lg:hidden" data-mobile-menu>
         <summary
           class="flex min-h-10 cursor-pointer list-none items-center gap-1.5 rounded-full border border-line px-2.5 py-2 text-sm font-medium"
         >
