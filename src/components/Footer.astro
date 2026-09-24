@@ -1,0 +1,109 @@
+---
+import { profile } from '../config/profile';
+import type { Lang } from '../i18n/ui';
+import { fill, localizePath, useTranslations } from '../i18n/utils';
+import { brandIcon } from '../lib/icons';
+import BrandIcon from './BrandIcon.astro';
+import Icon from './Icon.astro';
+import LanguageSwitcher from './LanguageSwitcher.astro';
+
+interface Props {
+  lang: Lang;
+  switchTo: string;
+  isHome: boolean;
+}
+
+const { lang, switchTo, isHome } = Astro.props;
+const t = useTranslations(lang);
+const home = localizePath(lang, '/');
+const anchor = (id: string) => (isHome ? `#${id}` : `${home}#${id}`);
+const year = new Date().getFullYear();
+const sections = [
+  { id: 'services', label: t.nav.services },
+  { id: 'work', label: t.nav.work },
+  { id: 'process', label: t.nav.process },
+  { id: 'faq', label: t.nav.faq },
+  { id: 'contact', label: t.nav.contact },
+];
+---
+
+<footer class="mt-28 border-t border-line bg-ink-2/60" transition:animate="none">
+  <div class="container-page grid gap-10 py-14 md:grid-cols-[1.6fr_1fr_1fr]">
+    <div>
+      <p class="font-display text-xl font-semibold">{profile.name}</p>
+      <p class="mt-1 text-sm text-primary-soft">{profile.jobTitle[lang]}</p>
+      <p class="mt-4 max-w-sm text-sm leading-relaxed text-muted">{t.footer.tagline}</p>
+      <LanguageSwitcher lang={lang} href={switchTo} class="mt-6" />
+    </div>
+
+    <nav aria-label={t.a11y.footerNav}>
+      <h2 class="font-display text-sm font-semibold uppercase tracking-[0.14em] text-fg">
+        {t.footer.links}
+      </h2>
+      <ul class="mt-4 grid gap-2.5 text-sm">
+        {
+          sections.map((section) => (
+            <li>
+              <a href={anchor(section.id)} class="text-muted transition-colors hover:text-fg">
+                {section.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div>
+      <h2 class="font-display text-sm font-semibold uppercase tracking-[0.14em] text-fg">
+        {t.nav.contact}
+      </h2>
+      <ul class="mt-4 grid gap-2.5 text-sm">
+        <li>
+          <a
+            href={profile.links.fiverr}
+            target="_blank"
+            rel="noopener"
+            class="inline-flex items-center gap-2 text-muted transition-colors hover:text-fg"
+          >
+            <Icon name="message" size={16} />
+            Fiverr
+            <span class="sr-only">{t.a11y.opensNewTab}</span>
+          </a>
+        </li>
+        <li>
+          <a
+            href={`mailto:${profile.email}`}
+            class="inline-flex items-center gap-2 break-all text-muted transition-colors hover:text-fg"
+          >
+            <Icon name="mail" size={16} />
+            {profile.email}
+          </a>
+        </li>
+        <li>
+          <a
+            href={profile.links.github}
+            target="_blank"
+            rel="noopener"
+            class="inline-flex items-center gap-2 text-muted transition-colors hover:text-fg"
+          >
+            <BrandIcon icon={brandIcon('github')} size={16} />
+            GitHub
+            <span class="sr-only">{t.a11y.opensNewTab}</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="border-t border-line">
+    <div
+      class="container-page flex flex-col gap-3 py-6 text-sm text-muted sm:flex-row sm:items-center sm:justify-between"
+    >
+      <p>{fill(t.footer.rights, { year })} {t.footer.builtWith}</p>
+      <a href="#top" class="inline-flex items-center gap-1.5 self-start text-muted hover:text-fg sm:self-auto">
+        <Icon name="arrow-up" size={16} />
+        {t.footer.backToTop}
+      </a>
+    </div>
+  </div>
+</footer>

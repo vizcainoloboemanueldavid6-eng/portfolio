@@ -1,0 +1,69 @@
+---
+import { profile } from '../config/profile';
+import { languages, type Lang } from '../i18n/ui';
+import { langs, useTranslations } from '../i18n/utils';
+
+export interface SeoImage {
+  /** Path on this site, e.g. /og/en.png */
+  path: string;
+  alt: string;
+  width: number;
+  height: number;
+}
+
+interface Props {
+  title: string;
+  description: string;
+  lang: Lang;
+  /** The same page in every language; omit on pages that exist once (404). */
+  alternates?: Record<Lang, string>;
+  image: SeoImage;
+  type?: 'website' | 'article';
+  noindex?: boolean;
+  jsonLd?: Record<string, unknown>[];
+}
+
+const { title, description, lang, alternates, image, type = 'website', noindex = false, jsonLd = [] } =
+  Astro.props;
+
+const site = Astro.site ?? new URL(Astro.url.origin);
+const canonical = new URL(Astro.url.pathname, site).href;
+const imageUrl = new URL(image.path, site).href;
+const t = useTranslations(lang);
+const otherLocales = langs.filter((l) => l !== lang).map((l) => useTranslations(l).meta.locale);
+
+/** `</script>` inside a string would end the tag early. */
+const serialize = (value: unknown) => JSON.stringify(value).replace(/</g, '\\u003c');
+---
+
+<title>{title}</title>
+<meta name="description" content={description} />
+{noindex ? <meta name="robots" content="noindex, follow" /> : <link rel="canonical" href={canonical} />}
+{
+  alternates &&
+    langs.map((l) => (
+      <link rel="alternate" hreflang={l} href={new URL(alternates[l], site).href} title={languages[l]} />
+    ))
+}
+{alternates && <link rel="alternate" hreflang="x-default" href={new URL(alternates.en, site).href} />}
+
+<meta property="og:type" content={type} />
+<meta property="og:site_name" content={profile.name} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta property="og:locale" content={t.meta.locale} />
+{otherLocales.map((locale) => <meta property="og:locale:alternate" content={locale} />)}
+<meta property="og:image" content={imageUrl} />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content={String(image.width)} />
+<meta property="og:image:height" content={String(image.height)} />
+<meta property="og:image:alt" content={image.alt} />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={imageUrl} />
+<meta name="twitter:image:alt" content={image.alt} />
+
+{jsonLd.map((data) => <script type="application/ld+json" set:html={serialize(data)} />)}

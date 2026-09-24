@@ -1,0 +1,166 @@
+---
+import { profile } from '../config/profile';
+import type { Lang } from '../i18n/ui';
+import { localizePath, useTranslations } from '../i18n/utils';
+import Icon from './Icon.astro';
+import LanguageSwitcher from './LanguageSwitcher.astro';
+
+interface Props {
+  lang: Lang;
+  switchTo: string;
+  isHome: boolean;
+}
+
+const { lang, switchTo, isHome } = Astro.props;
+const t = useTranslations(lang);
+const home = localizePath(lang, '/');
+const anchor = (id: string) => (isHome ? `#${id}` : `${home}#${id}`);
+const links = [
+  { id: 'services', label: t.nav.services },
+  { id: 'work', label: t.nav.work },
+  { id: 'process', label: t.nav.process },
+  { id: 'faq', label: t.nav.faq },
+  { id: 'contact', label: t.nav.contact },
+];
+---
+
+<header
+  class="sticky top-0 z-40 border-b border-line bg-ink/80 backdrop-blur-md supports-[backdrop-filter]:bg-ink/65"
+  transition:animate="none"
+>
+  <div class="container-page flex h-16 items-center justify-between gap-3">
+    <a href={home} class="group flex shrink-0 items-center gap-2.5 rounded-lg font-display text-[1.05rem] font-semibold tracking-tight">
+      <span class="logo-mark" aria-hidden="true">{profile.initials}</span>
+      <span class="max-[359px]:sr-only">{profile.username}</span>
+    </a>
+
+    <nav aria-label={t.a11y.primaryNav} class="hidden md:block">
+      <ul class="flex items-center gap-1">
+        {
+          links.map((link) => (
+            <li>
+              <a
+                href={anchor(link.id)}
+                class="rounded-full px-3 py-2 text-sm font-medium text-muted transition-colors hover:bg-white/5 hover:text-fg"
+              >
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="flex items-center gap-1.5 sm:gap-2">
+      <LanguageSwitcher lang={lang} href={switchTo} compact />
+      <a
+        href={profile.links.fiverr}
+        target="_blank"
+        rel="noopener"
+        class="btn btn-primary btn-sm hidden sm:inline-flex"
+      >
+        {t.nav.hireMe}
+        <span class="sr-only">{t.a11y.opensNewTab}</span>
+      </a>
+
+      <details class="mobile-menu relative md:hidden" data-mobile-menu>
+        <summary
+          class="flex min-h-10 cursor-pointer list-none items-center gap-1.5 rounded-full border border-line px-2.5 py-2 text-sm font-medium"
+        >
+          <Icon name="menu" size={18} class="icon-open" />
+          <Icon name="close" size={18} class="icon-close" />
+          <span>{t.nav.menu}</span>
+        </summary>
+        <div class="menu-panel card absolute right-0 top-[calc(100%+0.75rem)] w-64 p-3 shadow-2xl shadow-black/60">
+          <nav aria-label={t.a11y.primaryNav}>
+            <ul class="grid gap-1">
+              {
+                links.map((link) => (
+                  <li>
+                    <a
+                      href={anchor(link.id)}
+                      class="block rounded-xl px-3 py-2.5 font-medium text-fg hover:bg-white/5"
+                    >
+                      {link.label}
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+          </nav>
+          <a
+            href={profile.links.fiverr}
+            target="_blank"
+            rel="noopener"
+            class="btn btn-primary mt-3 w-full"
+          >
+            {t.hero.ctaPrimary}
+            <span class="sr-only">{t.a11y.opensNewTab}</span>
+          </a>
+        </div>
+      </details>
+    </div>
+  </div>
+</header>
+
+<style>
+  .logo-mark {
+    display: inline-grid;
+    place-items: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    border-radius: 0.6rem;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-deep));
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    box-shadow: 0 6px 18px -8px rgb(124 92 255 / 0.9);
+    position: relative;
+  }
+
+  .logo-mark::after {
+    content: '';
+    position: absolute;
+    top: 0.3rem;
+    right: 0.3rem;
+    width: 0.3rem;
+    height: 0.3rem;
+    border-radius: 50%;
+    background: var(--color-secondary);
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .mobile-menu .icon-close,
+  .mobile-menu[open] .icon-open {
+    display: none;
+  }
+
+  .mobile-menu[open] .icon-close {
+    display: block;
+  }
+</style>
+
+<script>
+  // The menu is a native <details>, so it opens and closes without JavaScript.
+  // This only adds the niceties: close after choosing a link, on Escape and on
+  // a click outside. Listeners live on the document, so they survive page swaps.
+  const openMenu = () => document.querySelector<HTMLDetailsElement>('[data-mobile-menu][open]');
+
+  document.addEventListener('click', (event) => {
+    const menu = openMenu();
+    if (!menu) return;
+    const target = event.target as Element;
+    if (!menu.contains(target) || target.closest('.menu-panel a')) menu.open = false;
+  });
+
+  document.addEventListener('keydown', (event) => {
+    const menu = openMenu();
+    if (event.key !== 'Escape' || !menu) return;
+    menu.open = false;
+    menu.querySelector('summary')?.focus();
+  });
+</script>

@@ -1,0 +1,80 @@
+---
+import '@fontsource-variable/inter/wght.css';
+import '@fontsource-variable/space-grotesk/wght.css';
+import '../styles/global.css';
+import interLatin from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
+import groteskLatin from '@fontsource-variable/space-grotesk/files/space-grotesk-latin-wght-normal.woff2?url';
+import { ClientRouter } from 'astro:transitions';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import Seo, { type SeoImage } from '../components/Seo.astro';
+import type { Lang } from '../i18n/ui';
+import { useTranslations } from '../i18n/utils';
+
+interface Props {
+  lang: Lang;
+  title: string;
+  description: string;
+  image: SeoImage;
+  /** The same page in each language. Omit for single-language pages (404). */
+  alternates?: Record<Lang, string>;
+  type?: 'website' | 'article';
+  noindex?: boolean;
+  jsonLd?: Record<string, unknown>[];
+  isHome?: boolean;
+}
+
+const { lang, alternates, isHome = false, ...seo } = Astro.props;
+const t = useTranslations(lang);
+const otherLang: Lang = lang === 'en' ? 'es' : 'en';
+const switchTo = alternates?.[otherLang] ?? (otherLang === 'en' ? '/' : '/es/');
+---
+
+<!doctype html>
+<html lang={lang} dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preload" href={interLatin} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={groteskLatin} as="font" type="font/woff2" crossorigin />
+    <Seo lang={lang} alternates={alternates} {...seo} />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#0b0c10" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="generator" content={Astro.generator} />
+    <ClientRouter />
+  </head>
+  <body id="top" class="text-fg">
+    <a href="#main" class="skip-link">{t.a11y.skipLink}</a>
+    <div class="aurora" aria-hidden="true" transition:persist="aurora"></div>
+    <Header lang={lang} switchTo={switchTo} isHome={isHome} />
+    <main id="main" tabindex="-1" class="outline-none">
+      <slot />
+    </main>
+    <Footer lang={lang} switchTo={switchTo} isHome={isHome} />
+
+    <script>
+      // Keep the section you were reading when switching language on the home
+      // page: /#faq → /es/#faq (section ids are the same in both languages).
+      // Capture phase, so the href is updated before the router reads it.
+      document.addEventListener(
+        'click',
+        (event) => {
+          const link = (event.target as Element | null)?.closest<HTMLAnchorElement>(
+            'a[data-lang-switch]',
+          );
+          if (!link || !window.location.hash) return;
+          const target = new URL(link.href);
+          if (target.hash) return;
+          const here = window.location.pathname.replace(/^\/es(?=\/)/, '');
+          const there = target.pathname.replace(/^\/es(?=\/)/, '');
+          if (here === there) link.href = `${target.pathname}${window.location.hash}`;
+        },
+        true,
+      );
+    </script>
+  </body>
+</html>
