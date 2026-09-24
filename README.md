@@ -51,20 +51,22 @@ varias pasadas por página, `npm run audit`):
 
 | Página                        | Rendimiento | Accesibilidad | Buenas prácticas | SEO |
 | ----------------------------- | ----------- | ------------- | ---------------- | --- |
-| Inicio (`/`)                  | 100         | 100           | 100              | 100 |
+| Inicio (`/`)                  | 99          | 100           | 100              | 100 |
 | Inicio (`/es/`)               | 100         | 100           | 100              | 100 |
-| Caso de estudio (EN)          | 100         | 100           | 100              | 100 |
-| Caso de estudio (ES)          | 100         | 100           | 100              | 100 |
+| Caso de estudio (EN, Bella Cucina) | 99     | 100           | 100              | 100 |
+| Caso de estudio (ES, StockFlow)    | 100    | 100           | 100              | 100 |
 
-LCP ≈ 1,7–1,9 s, TBT 0 ms y CLS 0 en móvil simulado (Lighthouse 13.5 en Google Chrome, mediana de
-todas las pasadas, sin descartar ninguna). En otra máquina los números pueden variar
-unos puntos: el rendimiento depende de lo ocupada que esté la CPU mientras se mide.
+LCP ≈ 1,6–1,9 s, TBT 0–23 ms y CLS 0 en móvil simulado (Lighthouse 13.5 en Google Chrome, mediana
+de todas las pasadas, sin descartar ninguna). En otra máquina los números pueden variar unos
+puntos: el rendimiento depende de lo ocupada que esté la CPU mientras se mide. Los dos casos de
+estudio auditados son el primer proyecto de la cuadrícula (en inglés) y el último (en español).
 
 ---
 
 ## Empezar
 
-Necesitas **Node.js 22.12 o superior**.
+Necesitas **Node.js 22.19 o superior**: los scripts `placeholders` y `checks` importan archivos
+`.ts` directamente (Node lo hace sin opciones desde la 22.18) y Lighthouse 13 pide la 22.19.
 
 ```bash
 npm install
@@ -81,7 +83,7 @@ Abre <http://localhost:4330>. Los cambios se ven al guardar.
 | `npm run check`        | Comprobación de tipos de Astro/TypeScript                                       |
 | `npm run images`       | Optimiza las capturas de `media/projects/` hacia `public/projects/`             |
 | `npm run placeholders` | Genera portadas provisionales en SVG                                            |
-| `npm run checks`       | Más de 500 comprobaciones automáticas del sitio construido, en un navegador real |
+| `npm run checks`       | Más de 600 comprobaciones automáticas del sitio construido, en un navegador real |
 | `npm run audit`        | Lighthouse móvil sobre 4 páginas; falla si algo baja de 95                      |
 | `npm run shots`        | Capturas de pantalla a 375 y 1440 px en `docs/`                                 |
 | `npm run verify`       | `check` → `build` → `checks` → `audit`, en ese orden                            |
@@ -106,14 +108,14 @@ comentario `// TODO: replace with your real data`; cámbialos todos y borra el c
 | `email`                        | Correo de contacto                                                                           |
 | `photo`                        | Ruta de tu foto dentro de `public/`, p. ej. `'/avatar.webp'`. Vacío = círculo con iniciales  |
 | `initials`                     | Dos letras para el favicon, el logo y el avatar provisional                                  |
-| `available`                    | `true` muestra la etiqueta "Available for new projects"                                     |
+| `available`                    | `true` muestra la etiqueta "Available for new projects" y el punto verde del avatar        |
 | `responseHours`, `supportDays` | Horas en que respondes y días de soporte gratuito (se usan en las preguntas frecuentes)     |
 | `links.fiverr`, `links.github` | Tu perfil de Fiverr y tu perfil de GitHub                                                    |
 | `services.*.fromPrice`         | Precio "desde" de cada servicio, en dólares                                                  |
 | `services.*.deliveryDays`      | Plazo mínimo de entrega de cada servicio                                                     |
 | `services.*.gigUrl`            | Enlace a cada gig de Fiverr (sitios web, extensiones, apps web)                              |
 | `techStack`                    | Iconos de la sección de tecnologías: el *slug* de cada una en <https://simpleicons.org>      |
-| `knowsAbout`                   | Temas que dominas (solo para los datos estructurados)                                       |
+| `knowsAbout.en` / `.es`        | Temas que dominas, en cada idioma (solo para los datos estructurados)                       |
 
 **Tu foto.** Guarda una imagen cuadrada de unos 400×400 px (mejor en WebP) como
 `public/avatar.webp` y pon `photo: '/avatar.webp'`.
@@ -121,6 +123,14 @@ comentario `// TODO: replace with your real data`; cámbialos todos y borra el c
 **Los enlaces de ejemplo** apuntan a la portada de Fiverr y de GitHub (no a ningún usuario real).
 Mientras sigan así, el sitio no los publica en los datos estructurados. Pon tus URLs completas,
 por ejemplo `https://www.fiverr.com/tu_usuario` y `https://github.com/tu-usuario`.
+
+**Los enlaces de los proyectos no están en `profile.ts`**, sino en cada Markdown del proyecto
+(`liveUrl` y `repoUrl`, sección 3). Bella Cucina y FitCoach Pro ya apuntan a sus webs publicadas y
+a sus repositorios en tu cuenta real de GitHub (`vizcainoloboemanueldavid6-eng`). Cuando pongas tu
+perfil de GitHub en `links.github`, usa **esa misma cuenta**: `npm run checks` falla si un
+`repoUrl` de GitHub pertenece a otra cuenta distinta de la de tu perfil. Mientras el perfil siga
+siendo el de ejemplo, la sección de contacto muestra `@mateobuilds` y los botones "Source code"
+llevan a tu cuenta real: por eso no publiques el sitio sin cambiar antes el perfil.
 
 **Los textos** (titulares, servicios, pasos del proceso, preguntas frecuentes…) están en
 `src/i18n/ui.ts`, en inglés y en español. Las marcas como `{responseHours}` o `{name}` se
@@ -175,7 +185,11 @@ screenshots:
 Si un proyecto no tiene `screenshots`, la sección de capturas simplemente no aparece.
 
 **Forma rápida:** copia un `.webp` o `.png` ya preparado en `public/projects/<proyecto>/` y
-ponlo en `cover:`. Funciona igual, solo que sin las versiones optimizadas por tamaño.
+ponlo en `cover:`. Funciona igual, solo que sin las versiones optimizadas por tamaño. También
+puedes sobrescribir directamente un `cover.webp` que ya existía: el sitio detecta que el archivo
+cambió y lo sirve tal cual en vez de las versiones optimizadas antiguas. (Ojo: si después ejecutas
+`npm run images`, ese `cover.webp` se vuelve a generar desde `media/`; para conservarlo, guarda
+también la captura en `media/projects/<proyecto>/cover.png`.)
 
 ---
 
@@ -220,8 +234,11 @@ Optional Markdown: appears as "Behind the build" on the project page.
 - Para una portada provisional mientras no tengas captura:
 
   ```bash
-  npm run placeholders -- mi-proyecto "My Project" "Booking web app" "#0EA5E9"
+  npm run placeholders -- mi-proyecto "My Project" "#0EA5E9"
   ```
+
+  La portada provisional lleva solo el nombre del proyecto sobre su color, así sirve igual para
+  las páginas en inglés y en español.
 
 - `type`, `order`, `cover`, `liveUrl` y `repoUrl` deben ser **iguales en los dos idiomas**. Si
   falta la traducción o no coinciden, `npm run build` se detiene y te dice qué corregir. Lo mismo

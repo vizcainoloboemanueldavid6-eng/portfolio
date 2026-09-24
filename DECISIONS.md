@@ -33,11 +33,18 @@ Every dependency is pinned without `^` or `~`, like the rest of this portfolio s
 blocks install scripts by default; `package.json` allows only esbuild's (`allowScripts`), which
 it needs to verify its binary.
 
+### Node.js 22.19 or newer
+
+Astro 7 itself runs on 22.12, but `scripts/placeholders.mjs` and `scripts/checks.mjs` import `.ts`
+files (profile.ts, glyphs.ts, images.ts) directly, which plain Node only does without a flag from
+22.18, and the pinned Lighthouse 13.5 declares `>=22.19`. `engines` and the README say 22.19, the
+same floor as the FitCoach Pro project, instead of a number that only holds for `npm run build`.
+
 ### No ESLint or Prettier
 
 The acceptance criteria are `npm run build` and `astro check`, and both are clean. For a static
-site with almost no JavaScript, `npm run checks` (over 300 assertions in a real browser) catches
-far more than a linter would.
+site with almost no JavaScript, `npm run checks` (over 600 assertions, most of them in a real
+browser) catches far more than a linter would.
 
 ---
 
@@ -49,7 +56,8 @@ All personal data comes from `src/config/profile.ts`, filled with the example pr
 asks for (Mateo Rivas, `mateobuilds`, `hello@example.com`). Every field carries
 `// TODO: replace with your real data`, and `npm run checks` fails if one is missing. Prices,
 delivery days, response time and support days are in the same file because they are the owner's
-commercial terms, and the FAQ and service cards read them from there.
+commercial terms, and the FAQ and service cards read them from there. `available: false` hides both
+availability signals, the hero badge and the avatar's green "online" dot.
 
 ### Placeholder links point at the sites themselves, never at a person
 
@@ -70,25 +78,46 @@ employers, dates, client logos, testimonials, ratings or "trusted by" strips. Th
 
 ### Real URLs for projects 01 and 02
 
-The spec says `liveUrl` and `repoUrl` start as `#` with a TODO, but two of the five already exist:
+The spec says `liveUrl` and `repoUrl` start as `#` with a TODO, but two of the five projects are
+already deployed and public, and a "Coming soon" button for something that exists would be the
+less honest option:
 
 - Bella Cucina: live at `https://bella-cucina-steel.vercel.app`, source at
   `github.com/vizcainoloboemanueldavid6-eng/bella-cucina`.
-- FitCoach Pro: live at `https://fitcoach-pro-mu.vercel.app`; no public repository yet, so
-  `repoUrl: '#'` with a TODO.
+- FitCoach Pro: live at `https://fitcoach-pro-mu.vercel.app`, source at
+  `github.com/vizcainoloboemanueldavid6-eng/fitcoach-pro` (public since before this site's first
+  commit; an earlier version of this file wrongly said it did not exist yet).
 
-`https://bella-cucina.vercel.app` (without `-steel`) belongs to somebody else and is never used;
-a check guards against it. TabZen, QuickNotes and StockFlow keep `#` + TODO for both links.
+Each of those four lines still carries the spec's TODO comment, worded as "confirm/keep in sync"
+rather than "add". `https://bella-cucina.vercel.app` (without `-steel`) belongs to somebody else and
+is never used; a check guards against it. TabZen, QuickNotes and StockFlow keep `#` + TODO for both
+links.
+
+### Project repositories and the example profile name two different people
+
+The repositories live on the owner's real GitHub account, while the example profile the spec
+prescribes is "Mateo Rivas" with a placeholder GitHub link. Until the owner fills in profile.ts, a
+visitor would see `@mateobuilds` in Contact and a different account behind "Source code". That is
+accepted, because the site is not meant to go live with the example profile (the README says so
+first thing), and the alternative, hiding real links behind "Coming soon", misrepresents the work.
+To keep the two from drifting apart once the profile is real, the repoUrl TODO says "same GitHub
+account as `profile.links.github`", README §1 tells the owner, and `npm run checks` fails when
+`profile.links.github` is a real profile and a GitHub `repoUrl` belongs to another account (while
+it is still the placeholder, it checks that all GitHub `repoUrl`s at least share one account).
 
 ### Projects 03–05 are written from their specifications
 
-They were being built in parallel, so their case studies describe what their specs commit to
-(features, permissions, architecture), in the present tense, without invented metrics. The two
-sibling projects that already shipped quote their own measured Lighthouse numbers from their
-READMEs. Bella Cucina and FitCoach Pro are fictional businesses, and their case studies say so.
-Shared copy does not overstate either: the Work intro says the projects were "designed and built
-end to end" and no longer "from the first sketch to deployment", because three of the five are
-not deployed yet (their pages say "Launching soon").
+They were being built in parallel, so their case studies were first written from what their specs
+commit to (features, permissions, architecture), without invented metrics. The present tense is only
+kept for claims a file in the sibling repository backs: the fix round re-read the three repositories
+and removed what was not there yet (TabZen's privacy policy and store listing texts) and softened
+what was only partly true (StockFlow's "staff user tries to delete" became "is offered no way to
+delete", which is what its tests check). They get re-checked against the finished projects when
+those are done. The two sibling projects that already shipped quote their own measured Lighthouse
+numbers from their READMEs. Bella Cucina and FitCoach Pro are fictional businesses, and their case
+studies say so. Shared copy does not overstate either: the Work intro says the projects were
+"designed and built end to end" and no longer "from the first sketch to deployment", because three
+of the five are not deployed yet (their pages say "Launching soon").
 
 ### A `#` link is a disabled "Coming soon" state, not a dead link
 
@@ -123,11 +152,26 @@ The sibling projects ship full-page Playwright screenshots in their `docs/` fold
 cropped (read-only, nothing in those folders was changed) into 16:10 sources in
 `media/projects/<slug>/`: the desktop hero as the cover, three sections as screenshots, and the
 phone capture composited into a 16:10 frame so every image shares the card's ratio. TabZen,
-QuickNotes and StockFlow get an SVG placeholder (name + one-line label on their own brand
-colour from their specs: `#5B5BD6`, `#F2B705`, `#2563EB`) until real captures exist. Their
-`screenshots` lists are empty, and the Screenshots section only renders when the list has items,
-so there is no "coming soon" gallery. The placeholder labels are English in both languages:
-they are pictures meant to be replaced, not copy.
+QuickNotes and StockFlow get an SVG placeholder (the project name on its own brand colour from
+their specs: `#5B5BD6`, `#F2B705`, `#2563EB`) until real captures exist. Their `screenshots` lists
+are empty, and the Screenshots section only renders when the list has items, so there is no
+"coming soon" gallery. That leaves the spec's "capturas" open for those three pages until their
+projects are finished; see the next section.
+
+The placeholders show only the name, which reads the same in both languages. An earlier version
+added an English one-line label ("Inventory management web app"), which then appeared on the
+Spanish pages and Open Graph cards; the spec only asks for "name and colour". `npm run checks`
+compares the committed SVGs with the generator's output and fails if a label comes back.
+
+### Screenshots for projects 03–05 wait for the finished projects
+
+TabZen, QuickNotes and StockFlow were still being built by other sessions during this round (their
+store images were being regenerated minutes apart). Copying screens that are about to change would
+only publish stale captures, so the case studies keep the cover placeholder and no gallery for now.
+When each project is final: extension popup, side panel and options captured with Playwright's
+Chromium and `--load-extension` (branded Chrome ignores that flag), StockFlow through its demo
+account, all at 1440×900, then `npm run images`, `screenshots:` in both languages and the SVG cover
+replaced.
 
 ### `npm run images`: sources in `media/`, output in `public/`
 
@@ -137,6 +181,13 @@ that manifest to print a `<picture>` with `srcset`, `sizes`, `width` and `height
 references the plain file (`/projects/bella-cucina/cover.webp`); an image that is not in the
 manifest (the SVG placeholders, or a file the owner drops into `public/` by hand) is served as
 it is, inside the same fixed 16:10 box, so nothing shifts either way.
+
+The manifest also stores a short sha256 of each plain `.webp`, and the variants are used only when
+the frontmatter names that exact `.webp` and the file is unchanged. Before, the lookup stripped the
+extension, so the README's quick way (overwrite `cover.webp`, or add `cover.png`) silently kept
+showing the old variants on the page while the Open Graph card, which reads the real file, showed
+the new one. Hashing ten files per build costs nothing; comparing modification times would break
+on a fresh clone, where every file has the checkout's time.
 
 Covers stay in `public/projects/` as the spec requires, rather than going through
 `astro:assets`, so replacing one is a file operation the README can describe in two lines.
@@ -194,8 +245,14 @@ name is just the project title, and the focus ring is drawn around the card with
 
 ### Work filter: progressive enhancement
 
-The filter buttons ship with the `hidden` attribute and a tiny script unhides them. Without
-JavaScript, every project is simply listed. They are native `<button>`s with `aria-pressed`
+The filter buttons are in the page from the first paint, and a `<noscript>` rule
+(`[data-filter-group]{display:none}`) hides them when JavaScript is off, so without it every
+project is simply listed. They used to ship with the `hidden` attribute and be unhidden by the
+script on `astro:page-load`. That added 84 px (desktop) to 188 px (phone) above every later section
+*after* the client router had started its smooth scroll to `/#faq`, `/#contact`… from another
+page, so those links stopped short by exactly that much. Astro's router removes `<noscript>` from
+the pages it swaps in, so the rule never applies after a client-side navigation, and a check
+asserts the landing position with smooth scrolling on. They are native `<button>`s with `aria-pressed`
 inside a labelled group, so Tab, Enter and Space work with nothing extra; a polite live region
 announces "Showing 2 projects". When the browser supports it and the visitor has not asked for
 reduced motion, the change runs inside `document.startViewTransition()`, so the covers glide to
@@ -239,6 +296,29 @@ under 2:1 against the card) keep the text colour on hover, because lightening bl
 that is dimmer than the icon at rest and looks disabled. They are decorative (`aria-hidden`)
 because the name is always written next to them.
 
+### One scroll offset, on the content, not on the page
+
+The sticky header is 4 rem tall. `:where(main, footer) * { scroll-margin-top: 4.5rem }` makes
+anything the page scrolls to (a `#section`, or a link or button receiving focus) stop just below
+it, and nothing else adds to it: a section's own top padding provides the breathing room. Two
+earlier choices were wrong. `scroll-padding-top` on `<html>` plus `scroll-mt-24` on each section
+added up to 184 px, leaving 120 px of empty space under the header. And a page-wide
+`scroll-padding-top` also covers the header itself: focusing one of its links (clicking the
+language switch or "Menu", or tabbing through the nav) made Chrome "reveal" the focused item by
+scrolling the page up about half a screen. A scroll-margin on the content keeps focused items clear
+of the header without touching the header. Checks assert both: sections land 72 px from the top,
+and focusing header items never scrolls.
+
+### Header: full nav from 1024 px, 90 % opaque
+
+The inline nav needs about 870 px in Spanish (Servicios, Proyectos, Proceso, Preguntas, Contacto,
+English, Contrátame). From 768 px it pushed the "Contrátame" button off the right edge, where
+`overflow-x: clip` made it unreachable, on the common tablet widths (768–864 px). The inline nav now
+starts at `lg` (1024 px), with the menu button below that; a check sweeps 320–1440 px in both
+languages for any header item past the edge. The background went from 65 % to 90 % ink, with the
+same blur: over the cream Bella Cucina screenshots the muted nav links dropped to about 2.5:1. A
+check puts white content under the header and requires 4.5:1.
+
 ### Mobile menu: a native `<details>`
 
 It opens and closes without JavaScript, is keyboard operable and announces its state. A few
@@ -259,19 +339,37 @@ Astro scopes a component's CSS to its own elements. Classes handed to a child co
 The spec's routes. Project pages are `/projects/<slug>/` and `/es/projects/<slug>/`, with the same
 slug in both languages, and section ids are the same in both languages (`#work`, `#faq`…). So the
 language switcher always maps to the equivalent page, and on the home page it keeps the section
-you were reading (`/#faq` → `/es/#faq`). Every string lives in `src/i18n/ui.ts`, typed by one
+you are reading (`/#faq` → `/es/#faq`). Every string lives in `src/i18n/ui.ts`, typed by one
 `UiStrings` interface: a missing translation is a type error.
+
+"The section you are reading" is worked out when the switch is clicked: the last section whose top
+has passed a line 30 % down the visible area (at the very bottom of the page, a `#hash` section
+still on screen wins, since the last sections cannot reach that line). The first version copied
+`location.hash`, which only records the last in-page jump: after clicking "See my work" and
+scrolling to the footer, switching language threw the visitor back to Work. Now a visitor who
+scrolled to the FAQ without any link also keeps it, and one at the top of the page gets the plain
+home page.
 
 ### The switcher is a link with the language's own name
 
 "Español" on English pages and "English" on Spanish ones, with `lang` and `hreflang` set. On
-phones the header shows "ES"/"EN" to fit 375 px, while the full name stays in the accessible
-name. The footer always shows the full name.
+phones the header shows "ES"/"EN" to fit 375 px; the accessible name is then "ES Español", so the
+visible label is part of it (WCAG 2.5.3 Label in Name: saying "click ES" works with speech input).
+The same applies to the logo, whose initials are the only visible text below 360 px: its name is
+"MR mateobuilds". The footer always shows the full name.
+
+### Everything in the Spanish pages' source is Spanish too
+
+`knowsAbout` in profile.ts has an English and a Spanish list, like `jobTitle`, so the Spanish
+JSON-LD `Person` no longer lists English topics. The web app manifest exists per language
+(`/site.webmanifest` and `/es/site.webmanifest`, with `lang`, `start_url` and the job title in that
+language), and each page links its own.
 
 ### One 404 page, in both languages
 
 Static hosts serve a single `404.html` for every unknown path, so the page is in English with
-the Spanish version under it (`lang="es"`), links to both home pages and `noindex`.
+the Spanish version under it (`lang="es"`), links to both home pages and `noindex`. Like the
+canonical, `og:url` is left out: it used to say `/404/`, a URL that does not exist.
 
 ### The site URL comes from the environment
 
@@ -302,6 +400,16 @@ they exist.
 Fiverr's terms keep orders and payments on the platform, so every primary call to action goes to
 Fiverr, and email and GitHub are secondary links. The spec says so explicitly; a check asserts
 there is no `<form>` on the home page.
+
+### Back to a `#hash` typed in the address bar reloads that page
+
+Astro's client router ignores history entries it did not create: a `#hash` typed into the address
+bar (or `location.hash` set by hand) leaves `history.state` at `null`, and its `popstate` handler
+returns early for those. Going Back to such an entry from a case study changed the URL to `/#faq`
+but kept the case study on screen. A small `popstate` listener in the layout reloads the page when
+the state is `null` and the path differs from the page on screen (it looks after a tick, because
+the router's own hash steps briefly have a `null` state too). A full load is the only thing that
+can show the right page for an entry the router knows nothing about.
 
 ### Host configuration ships with the code
 
@@ -344,7 +452,18 @@ time) is visible and can simply be repeated. The last HTML report per page and a
 go to `lighthouse/`.
 
 All scripts use ports 4330–4339 (dev 4330, preview 4332, screenshots 4333, checks 4335,
-Lighthouse 4336 with the browser's debugging port on 4339).
+Lighthouse 4336 with the browser's debugging port on 4339). The server answers a malformed
+`%`-escape with 400 instead of crashing (the decode used to throw inside an unhandled async
+handler, which ended the process under `checks`, `audit` and `shots`), and it only serves paths
+inside `dist/` (the containment test compares against `dist` plus a path separator, so a sibling
+such as `dist-old/` cannot match).
+
+### The scripts read the projects from the content folder
+
+`checks` requires at least the spec's five projects (not exactly five) and the same slugs in both
+languages. `audit` and `shots` pick their two case studies from the content folder (the first
+project in English, the last in Spanish) instead of hard-coding `bella-cucina`, `tabzen` and
+`stockflow`, so adding, renaming or removing a project does not break `npm run verify`.
 
 ### Screenshots
 
@@ -352,3 +471,17 @@ Lighthouse 4336 with the browser's debugging port on 4339).
 404 page, full-page at 375 and 1440 px, into `docs/` as JPEG at quality 80 and 1× scale (PNG at
 2× would weigh ten times as much in the repository). The capture runs with reduced motion so the
 background is deterministic, and it fails on any console error or failed request.
+
+---
+
+## History
+
+### Two `wip:` commits stay in the history
+
+`9737117` and `60fcebb` are pause points saved when earlier sessions were stopped mid-stage; their
+messages say so. They are not per-feature and are not conventional commits: the first only changes
+`scripts/lighthouse.mjs` (median of every pass), the second the tech-stack icon hover colours plus
+the matching README/DECISIONS text, completed by `9439aa2`. Squashing them into the commits that
+followed means rewriting `main`; the fix round tried a scripted rebase and the environment's
+permission policy refused it, so the history is left as it is and documented here. The owner can
+still squash them before the first push if a clean history matters to them.

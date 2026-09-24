@@ -107,7 +107,7 @@ Así Vercel queda conectado a GitHub y **cada `git push` a `main` publica autom�
    `SITE_URL`).
 5. Pulsa **Deploy**. En uno o dos minutos tendrás la dirección `https://portfolio-xxxx.vercel.app`.
 
-La versión de Node.js no hay que tocarla: `package.json` pide `>=22.12.0` y Vercel usa la más
+La versión de Node.js no hay que tocarla: `package.json` pide `>=22.19.0` y Vercel usa la más
 reciente disponible (Vercel puede mostrar un aviso informativo por ese `>=`; no es un error).
 
 Desde ese momento:
