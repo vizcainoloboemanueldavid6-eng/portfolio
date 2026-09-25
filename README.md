@@ -9,12 +9,19 @@ Hecho con **Astro 7**, **TypeScript** (modo estricto) y **Tailwind CSS 4**. Es u
 `npm run build` genera una carpeta `dist/` que se puede alojar gratis en Vercel, Netlify o
 cualquier hosting de archivos.
 
+> **Publicado (25-sep-2026):** https://webdev-freelance-portfolio.vercel.app (proyecto `portfolio`
+> de tu cuenta de Vercel, con `SITE_URL` apuntando a esa dirección). El código está en
+> https://github.com/vizcainoloboemanueldavid6-eng/portfolio. Vercel todavía no está conectado a
+> GitHub, así que para publicar cambios: `git push` y después `vercel --prod` desde esta carpeta
+> (ya está vinculada). Si prefieres que cada `git push` publique solo, conéctalo en Vercel →
+> proyecto `portfolio` → Settings → Git (instala la app de GitHub).
+
 > **Importante:** el sitio viene relleno con un **perfil de ejemplo, "Mateo Rivas"**
 > (`mateobuilds`, `hello@example.com`). Antes de publicarlo cambia esos datos por los tuyos: están
 > todos en un solo archivo, `src/config/profile.ts` (sección 1).
 
-| Escritorio (1440 px)                     | Móvil (375 px)                         |
-| ---------------------------------------- | -------------------------------------- |
+| Escritorio (1440 px)                        | Móvil (375 px)                        |
+| ------------------------------------------- | ------------------------------------- |
 | ![Inicio en escritorio](docs/home-1440.jpg) | ![Inicio en móvil](docs/home-375.jpg) |
 
 Más capturas en [`docs/`](docs/): inicio en español, un caso de estudio en cada idioma y la
@@ -52,15 +59,15 @@ página 404, a 375 y 1440 px.
 Lighthouse, perfil móvil, sobre la versión de producción servida con compresión (mediana de cinco
 pasadas por página, `LH_PASSES=5 npm run audit`; las tres últimas filas con `LH_URLS`):
 
-| Página                              | Rendimiento | Accesibilidad | Buenas prácticas | SEO |
-| ----------------------------------- | ----------- | ------------- | ---------------- | --- |
-| Inicio (`/`)                        | 100         | 100           | 100              | 100 |
-| Inicio (`/es/`)                     | 100         | 100           | 100              | 100 |
-| Caso de estudio (EN, Bella Cucina)  | 99          | 100           | 100              | 100 |
-| Caso de estudio (ES, StockFlow)     | 100         | 100           | 100              | 100 |
-| Caso de estudio (EN, TabZen)        | 100         | 100           | 100              | 100 |
-| Caso de estudio (ES, QuickNotes)    | 99          | 100           | 100              | 100 |
-| Caso de estudio (EN, StockFlow)     | 100         | 100           | 100              | 100 |
+| Página                             | Rendimiento | Accesibilidad | Buenas prácticas | SEO |
+| ---------------------------------- | ----------- | ------------- | ---------------- | --- |
+| Inicio (`/`)                       | 100         | 100           | 100              | 100 |
+| Inicio (`/es/`)                    | 100         | 100           | 100              | 100 |
+| Caso de estudio (EN, Bella Cucina) | 99          | 100           | 100              | 100 |
+| Caso de estudio (ES, StockFlow)    | 100         | 100           | 100              | 100 |
+| Caso de estudio (EN, TabZen)       | 100         | 100           | 100              | 100 |
+| Caso de estudio (ES, QuickNotes)   | 99          | 100           | 100              | 100 |
+| Caso de estudio (EN, StockFlow)    | 100         | 100           | 100              | 100 |
 
 LCP ≈ 1,7–2,0 s, TBT 0–36 ms y CLS 0 en móvil simulado (Lighthouse 13.5 en Google Chrome 153,
 mediana de todas las pasadas, sin descartar ninguna). Todos los casos de estudio medidos tienen
@@ -82,18 +89,18 @@ npm run dev
 
 Abre <http://localhost:4330>. Los cambios se ven al guardar.
 
-| Comando                | Qué hace                                                                        |
-| ---------------------- | ------------------------------------------------------------------------------- |
-| `npm run dev`          | Servidor de desarrollo en el puerto 4330                                        |
-| `npm run build`        | Genera el sitio final en `dist/`                                                |
-| `npm run preview`      | Sirve `dist/` en <http://localhost:4332> (como lo serviría el hosting)          |
-| `npm run check`        | Comprobación de tipos de Astro/TypeScript                                       |
-| `npm run images`       | Optimiza las capturas de `media/projects/` hacia `public/projects/`             |
-| `npm run placeholders` | Genera portadas provisionales en SVG                                            |
+| Comando                | Qué hace                                                                         |
+| ---------------------- | -------------------------------------------------------------------------------- |
+| `npm run dev`          | Servidor de desarrollo en el puerto 4330                                         |
+| `npm run build`        | Genera el sitio final en `dist/`                                                 |
+| `npm run preview`      | Sirve `dist/` en <http://localhost:4332> (como lo serviría el hosting)           |
+| `npm run check`        | Comprobación de tipos de Astro/TypeScript                                        |
+| `npm run images`       | Optimiza las capturas de `media/projects/` hacia `public/projects/`              |
+| `npm run placeholders` | Genera portadas provisionales en SVG                                             |
 | `npm run checks`       | Más de 600 comprobaciones automáticas del sitio construido, en un navegador real |
-| `npm run audit`        | Lighthouse móvil sobre 4 páginas; falla si algo baja de 95                      |
-| `npm run shots`        | Capturas de pantalla a 375 y 1440 px en `docs/`                                 |
-| `npm run verify`       | `check` → `build` → `checks` → `audit`, en ese orden                            |
+| `npm run audit`        | Lighthouse móvil sobre 4 páginas; falla si algo baja de 95                       |
+| `npm run shots`        | Capturas de pantalla a 375 y 1440 px en `docs/`                                  |
+| `npm run verify`       | `check` → `build` → `checks` → `audit`, en ese orden                             |
 
 `audit` hace de 3 a 5 pasadas por página según lo que coincidan; `LH_PASSES=5` fija cinco y
 `LH_URLS=/projects/tabzen/,/es/projects/quicknotes/` mide otras páginas (en PowerShell:
@@ -111,21 +118,21 @@ usa Google Chrome instalado en el equipo (`LH_CHANNEL=chromium` para usar el de 
 los datos estructurados, el favicon y las imágenes para redes sociales. Cada campo lleva el
 comentario `// TODO: replace with your real data`; cámbialos todos y borra el comentario.
 
-| Campo                          | Qué es                                                                                       |
-| ------------------------------ | -------------------------------------------------------------------------------------------- |
-| `name`, `firstName`            | Tu nombre completo y el que aparece en "Hi, I'm …"                                           |
-| `username`                     | Tu usuario (se muestra como `@usuario`)                                                      |
-| `jobTitle.en` / `jobTitle.es`  | Tu titular profesional en cada idioma                                                        |
-| `email`                        | Correo de contacto                                                                           |
-| `photo`                        | Ruta de tu foto dentro de `public/`, p. ej. `'/avatar.webp'`. Vacío = círculo con iniciales  |
-| `initials`                     | Dos letras para el favicon, el logo y el avatar provisional                                  |
-| `available`                    | `true` muestra la etiqueta "Available for new projects" y el punto verde del avatar        |
+| Campo                          | Qué es                                                                                      |
+| ------------------------------ | ------------------------------------------------------------------------------------------- |
+| `name`, `firstName`            | Tu nombre completo y el que aparece en "Hi, I'm …"                                          |
+| `username`                     | Tu usuario (se muestra como `@usuario`)                                                     |
+| `jobTitle.en` / `jobTitle.es`  | Tu titular profesional en cada idioma                                                       |
+| `email`                        | Correo de contacto                                                                          |
+| `photo`                        | Ruta de tu foto dentro de `public/`, p. ej. `'/avatar.webp'`. Vacío = círculo con iniciales |
+| `initials`                     | Dos letras para el favicon, el logo y el avatar provisional                                 |
+| `available`                    | `true` muestra la etiqueta "Available for new projects" y el punto verde del avatar         |
 | `responseHours`, `supportDays` | Horas en que respondes y días de soporte gratuito (se usan en las preguntas frecuentes)     |
-| `links.fiverr`, `links.github` | Tu perfil de Fiverr y tu perfil de GitHub                                                    |
-| `services.*.fromPrice`         | Precio "desde" de cada servicio, en dólares                                                  |
-| `services.*.deliveryDays`      | Plazo mínimo de entrega de cada servicio                                                     |
-| `services.*.gigUrl`            | Enlace a cada gig de Fiverr (sitios web, extensiones, apps web)                              |
-| `techStack`                    | Iconos de la sección de tecnologías: el *slug* de cada una en <https://simpleicons.org>      |
+| `links.fiverr`, `links.github` | Tu perfil de Fiverr y tu perfil de GitHub                                                   |
+| `services.*.fromPrice`         | Precio "desde" de cada servicio, en dólares                                                 |
+| `services.*.deliveryDays`      | Plazo mínimo de entrega de cada servicio                                                    |
+| `services.*.gigUrl`            | Enlace a cada gig de Fiverr (sitios web, extensiones, apps web)                             |
+| `techStack`                    | Iconos de la sección de tecnologías: el _slug_ de cada una en <https://simpleicons.org>     |
 | `knowsAbout.en` / `.es`        | Temas que dominas, en cada idioma (solo para los datos estructurados)                       |
 
 **Tu foto.** Guarda una imagen cuadrada de unos 400×400 px (mejor en WebP) como
@@ -169,7 +176,7 @@ Para cambiar una portada, o poner la de un proyecto nuevo (en el ejemplo, `mi-pr
 **Forma recomendada (con optimización automática):**
 
 1. Haz una captura de la página o de la extensión, idealmente de **1440×900 px** (proporción 16:10).
-   En Chrome: DevTools → icono de dispositivo → tamaño 1440×900 → menú ⋮ → *Capture screenshot*.
+   En Chrome: DevTools → icono de dispositivo → tamaño 1440×900 → menú ⋮ → _Capture screenshot_.
 2. Guárdala como `media/projects/<proyecto>/cover.png` (o `.jpg`). Por ejemplo
    `media/projects/mi-proyecto/cover.png`. Si ya existía, sustitúyela.
 3. Ejecuta:
@@ -180,6 +187,7 @@ Para cambiar una portada, o poner la de un proyecto nuevo (en el ejemplo, `mi-pr
 
    Se crean versiones AVIF y WebP en tres tamaños dentro de `public/projects/mi-proyecto/`, y el sitio
    elige la adecuada para cada pantalla.
+
 4. En **los dos** archivos del proyecto (`src/content/projects/en/mi-proyecto.md` y
    `src/content/projects/es/mi-proyecto.md`) cambia la portada y su descripción (`coverAlt` en el
    idioma de cada archivo):
@@ -228,28 +236,27 @@ Copia uno existente y cambia los campos:
 ```yaml
 ---
 title: My Project
-tagline: Booking web app                    # etiqueta corta bajo el título
+tagline: Booking web app # etiqueta corta bajo el título
 summary: One or two sentences for the card and the meta description (40–200 characters).
-type: web-app                               # website | chrome-extension | web-app
-stack: [Next.js, TypeScript, Tailwind CSS]  # los iconos se añaden solos si existen
-liveUrl: '#' # TODO: add the live URL       # URL completa https://…, o '#' = "Coming soon"
-liveLabel: Install (v1.0.0)                 # opcional: texto del botón en vez de "Live demo"
-repoUrl: '#' # TODO: add the repository URL
+type: web-app # website | chrome-extension | web-app
+stack: [Next.js, TypeScript, Tailwind CSS] # los iconos se añaden solos si existen
+liveUrl: "#" # TODO: add the live URL       # URL completa https://…, o '#' = "Coming soon"
+liveLabel: Install (v1.0.0) # opcional: texto del botón en vez de "Live demo"
+repoUrl: "#" # TODO: add the repository URL
 cover: /projects/mi-proyecto/cover.svg
 coverAlt: What the cover image shows
-order: 6                                    # posición en la cuadrícula
-featured: false                             # true = tarjeta grande (media fila en escritorio)
+order: 6 # posición en la cuadrícula
+featured: false # true = tarjeta grande (media fila en escritorio)
 problem: >-
   The problem the project solves.
 solution: >-
   How you solved it.
-features:                                   # mínimo 3
+features: # mínimo 3
   - First feature
   - Second feature
   - Third feature
-screenshots: []                             # opcional (ver sección 2)
+screenshots: [] # opcional (ver sección 2)
 ---
-
 Optional Markdown: appears as "Behind the build" on the project page.
 ```
 
@@ -295,7 +302,7 @@ git push -u origin main
 ### Vercel
 
 **Desde la web:** <https://vercel.com/new> → importa el repositorio → Vercel detecta Astro
-(comando `npm run build`, carpeta `dist`) → *Deploy*. Cada `git push` vuelve a publicar.
+(comando `npm run build`, carpeta `dist`) → _Deploy_. Cada `git push` vuelve a publicar.
 
 **Desde la terminal:**
 
@@ -310,7 +317,7 @@ producción del proyecto (`VERCEL_PROJECT_PRODUCTION_URL`), también cuando aña
 
 ### Netlify
 
-**Desde la web:** <https://app.netlify.com> → *Add new site* → *Import an existing project* →
+**Desde la web:** <https://app.netlify.com> → _Add new site_ → _Import an existing project_ →
 elige el repositorio. Comando de build `npm run build`, carpeta de publicación `dist`.
 
 **Desde la terminal:**
@@ -322,8 +329,8 @@ netlify init        # build: npm run build · publish: dist
 netlify deploy --prod
 ```
 
-Netlify también pasa su URL al build, pero es mejor fijarla: *Site configuration → Environment
-variables →* `SITE_URL` = `https://tu-sitio.netlify.app` (o tu dominio).
+Netlify también pasa su URL al build, pero es mejor fijarla: _Site configuration → Environment
+variables →_ `SITE_URL` = `https://tu-sitio.netlify.app` (o tu dominio).
 
 ### `SITE_URL`: la dirección pública del sitio
 
@@ -340,12 +347,12 @@ SITE_URL=https://tudominio.com
 
 ## 5. Conectar un dominio propio
 
-**En Vercel:** proyecto → *Settings → Domains* → escribe `tudominio.com` → *Add*. Vercel te
+**En Vercel:** proyecto → _Settings → Domains_ → escribe `tudominio.com` → _Add_. Vercel te
 muestra los registros DNS que debes crear en tu proveedor de dominio (normalmente un registro `A`
 para `tudominio.com` y un `CNAME` para `www`). Cuando el dominio aparezca como válido, vuelve a
-desplegar (*Deployments → Redeploy*) para que las URLs del sitio usen el dominio nuevo.
+desplegar (_Deployments → Redeploy_) para que las URLs del sitio usen el dominio nuevo.
 
-**En Netlify:** *Domain management → Add a domain* → sigue las instrucciones de DNS (o usa
+**En Netlify:** _Domain management → Add a domain_ → sigue las instrucciones de DNS (o usa
 Netlify DNS). Después cambia la variable `SITE_URL` a `https://tudominio.com` y vuelve a
 desplegar.
 
