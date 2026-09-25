@@ -136,11 +136,12 @@ async function main() {
 
   const lhVersion = JSON.parse(await fs.readFile(path.join(ROOT, 'node_modules', 'lighthouse', 'package.json'), 'utf8')).version;
   console.log(`\nLighthouse ${lhVersion} · mobile preset · ${CHANNEL} ${version} · median of every pass\n`);
-  console.log(['PAGE'.padEnd(11), 'PERF', 'A11Y', 'BEST', ' SEO', '   FCP', '   LCP', '  TBT', '  CLS', '  PASSES (perf / main-thread ms)'].join('  '));
+  const pageWidth = Math.max(11, ...rows.map((row) => row.page.length));
+  console.log(['PAGE'.padEnd(pageWidth), 'PERF', 'A11Y', 'BEST', ' SEO', '   FCP', '   LCP', '  TBT', '  CLS', '  PASSES (perf / main-thread ms)'].join('  '));
   for (const row of rows) {
     console.log(
       [
-        row.page.padEnd(11),
+        row.page.padEnd(pageWidth),
         ...[row.performance, row.accessibility, row['best-practices'], row.seo].map((v) => String(v).padStart(4)),
         `${row.fcp}ms`.padStart(6),
         `${row.lcp}ms`.padStart(6),
