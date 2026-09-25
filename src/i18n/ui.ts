@@ -130,6 +130,7 @@ export interface UiStrings {
     live: string;
     source: string;
     comingSoon: string;
+    /** Screen-reader text of a disabled live button; `{label}` is the button's own text. */
     liveSoonLabel: string;
     sourceSoonLabel: string;
     type: string;
@@ -138,6 +139,8 @@ export interface UiStrings {
     kind: string;
     status: string;
     statusLive: string;
+    /** Status of a Chrome extension whose release can be installed. */
+    statusReleased: string;
     statusSoon: string;
     prev: string;
     next: string;
@@ -360,7 +363,7 @@ export const ui: Record<Lang, UiStrings> = {
       live: 'Live demo',
       source: 'Source code',
       comingSoon: 'Coming soon',
-      liveSoonLabel: 'Live demo: coming soon',
+      liveSoonLabel: '{label}: coming soon',
       sourceSoonLabel: 'Source code: coming soon',
       type: 'Type',
       role: 'Role',
@@ -368,6 +371,7 @@ export const ui: Record<Lang, UiStrings> = {
       kind: 'Project',
       status: 'Status',
       statusLive: 'Live',
+      statusReleased: 'Released',
       statusSoon: 'Launching soon',
       prev: 'Previous project',
       next: 'Next project',
@@ -588,7 +592,7 @@ export const ui: Record<Lang, UiStrings> = {
       live: 'Demo en vivo',
       source: 'Código fuente',
       comingSoon: 'Próximamente',
-      liveSoonLabel: 'Demo en vivo: próximamente',
+      liveSoonLabel: '{label}: próximamente',
       sourceSoonLabel: 'Código fuente: próximamente',
       type: 'Tipo',
       role: 'Rol',
@@ -596,6 +600,7 @@ export const ui: Record<Lang, UiStrings> = {
       kind: 'Proyecto',
       status: 'Estado',
       statusLive: 'Publicado',
+      statusReleased: 'Publicada',
       statusSoon: 'Se publica pronto',
       prev: 'Proyecto anterior',
       next: 'Proyecto siguiente',

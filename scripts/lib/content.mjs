@@ -27,6 +27,7 @@ export async function loadProjects(lang) {
       title: field('title'),
       type: field('type'),
       liveUrl: field('liveUrl'),
+      liveLabel: field('liveLabel'),
       repoUrl: field('repoUrl'),
       cover: field('cover'),
       order: Number(field('order')),

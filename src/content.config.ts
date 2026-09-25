@@ -34,6 +34,12 @@ const projects = defineCollection({
     type: z.enum(['website', 'chrome-extension', 'web-app']),
     stack: z.array(z.string().min(1)).min(1),
     liveUrl: linkOrPending,
+    /**
+     * Text of the live button when "Live demo" would not say what it opens,
+     * e.g. "Install (v1.0.0)" for an extension released as a zip. Optional;
+     * if one language has it, the other must too.
+     */
+    liveLabel: z.string().min(1).max(32).optional(),
     repoUrl: linkOrPending,
     cover: publicImage,
     coverAlt: z.string().min(1),

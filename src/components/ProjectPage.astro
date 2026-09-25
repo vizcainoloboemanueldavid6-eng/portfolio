@@ -33,6 +33,13 @@ const pagePath = localizePath(lang, `/projects/${slug}/`);
 const ogPath = `/og/${lang}/${slug}.png`;
 const live = isPublished(data.liveUrl);
 const source = isPublished(data.repoUrl);
+// "Install (v1.0.0)" for an extension released as a zip; "Live demo" otherwise.
+const liveLabel = data.liveLabel ?? t.project.live;
+const statusText = !live
+  ? t.project.statusSoon
+  : data.type === 'chrome-extension'
+    ? t.project.statusReleased
+    : t.project.statusLive;
 const workLink = `${localizePath(lang, '/')}#work`;
 ---
 
@@ -85,14 +92,14 @@ const workLink = `${localizePath(lang, '/')}#work`;
           live ? (
             <a href={data.liveUrl} target="_blank" rel="noopener" class="btn btn-primary">
               <Icon name="arrow-up-right" size={18} />
-              {t.project.live}
+              {liveLabel}
               <span class="sr-only">{t.a11y.opensNewTab}</span>
             </a>
           ) : (
             <span class="btn btn-disabled">
               <Icon name="clock" size={18} />
-              <span class="sr-only">{t.project.liveSoonLabel}</span>
-              <span aria-hidden="true">{t.project.live}</span>
+              <span class="sr-only">{fill(t.project.liveSoonLabel, { label: liveLabel })}</span>
+              <span aria-hidden="true">{liveLabel}</span>
               <span class="soon-tag" aria-hidden="true">
                 {t.project.comingSoon}
               </span>
@@ -136,7 +143,7 @@ const workLink = `${localizePath(lang, '/')}#work`;
           <dt class="text-muted">{t.project.status}</dt>
           <dd class="mt-1 inline-flex items-center gap-2 font-semibold">
             <span class:list={['status-dot', live ? 'bg-secondary' : 'bg-muted']} aria-hidden="true"></span>
-            {live ? t.project.statusLive : t.project.statusSoon}
+            {statusText}
           </dd>
         </div>
       </dl>

@@ -45,6 +45,10 @@ async function assertTranslations(): Promise<void> {
           problems.push(`"${slug}": "${key}" differs between ${first.id} and ${other.id}`);
         }
       }
+      // The label is translated, but one language cannot say "Install" while the other says "Live demo".
+      if (Boolean(first.data.liveLabel) !== Boolean(other.data.liveLabel)) {
+        problems.push(`"${slug}": "liveLabel" is set in only one of ${first.id} and ${other.id}`);
+      }
     }
   }
   if (problems.length > 0) {
