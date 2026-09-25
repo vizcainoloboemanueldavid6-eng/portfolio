@@ -9,6 +9,10 @@
  *   people actually use. LH_CHANNEL=chromium uses Playwright's own Chromium.
  * - Runs: 3 passes per page, up to 5 when the passes disagree (a category
  *   straddles 95, or the performance scores spread by more than 5 points).
+ *   LH_PASSES=5 runs exactly that many passes on every page instead.
+ * - Pages: both home pages and two case studies (see below). LH_URLS takes a
+ *   comma-separated list of paths to audit instead, e.g.
+ *   LH_URLS=/projects/tabzen/,/es/projects/quicknotes/
  * - Score: the median of ALL passes. Nothing is excluded. Every pass's
  *   performance score and main-thread time is printed next to it, so a run
  *   slowed down by other work on the machine is visible — run it again.
@@ -32,17 +36,24 @@ const CHANNEL = process.env.LH_CHANNEL || 'chrome';
 const THRESHOLD = 95;
 const MIN_PASSES = 3;
 const MAX_PASSES = 5;
+/** 0 = adaptive (3 to 5 passes); any other number = exactly that many passes. */
+const FIXED_PASSES = Math.max(0, Math.trunc(Number(process.env.LH_PASSES) || 0));
 const CATEGORIES = ['performance', 'accessibility', 'best-practices', 'seo'];
 
 // The case studies come from the content folder (first project in English,
 // last in Spanish), so renaming or removing a project needs no change here.
 const samples = await sampleProjectPages();
-const pages = [
-  { slug: 'home', url: '/' },
-  { slug: 'home-es', url: '/es/' },
-  { slug: 'project', url: samples.en },
-  { slug: 'project-es', url: samples.es },
-];
+const pages = process.env.LH_URLS
+  ? process.env.LH_URLS.split(',')
+      .map((url) => url.trim())
+      .filter(Boolean)
+      .map((url) => ({ slug: url.replace(/^\/|\/$/g, '').replace(/\W+/g, '-') || 'home', url }))
+  : [
+      { slug: 'home', url: '/' },
+      { slug: 'home-es', url: '/es/' },
+      { slug: 'project', url: samples.en },
+      { slug: 'project-es', url: samples.es },
+    ];
 
 const median = (values) => [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)];
 
@@ -74,7 +85,7 @@ async function main() {
   try {
     for (const target of pages) {
       const passes = [];
-      while (passes.length < MAX_PASSES) {
+      while (passes.length < (FIXED_PASSES || MAX_PASSES)) {
         const result = await lighthouse(`http://localhost:${PORT}${target.url}`, {
           port: DEBUG_PORT,
           output: 'html',
@@ -94,7 +105,7 @@ async function main() {
           warnings: lhr.runWarnings ?? [],
         });
         await fs.writeFile(path.join(REPORTS, `${target.slug}.html`), String(report));
-        if (passes.length >= MIN_PASSES && !undecided(passes)) break;
+        if (!FIXED_PASSES && passes.length >= MIN_PASSES && !undecided(passes)) break;
       }
 
       const scores = Object.fromEntries(CATEGORIES.map((key) => [key, median(passes.map((p) => p.scores[key]))]));
