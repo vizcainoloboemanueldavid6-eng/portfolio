@@ -36,6 +36,14 @@ const STATUS = {
   es: { one: 'Mostrando 1 proyecto', many: (n) => `Mostrando ${n} proyectos` },
 };
 const PERSONAL = { en: 'Personal project', es: 'Proyecto personal' };
+/** Default live button text, and the status line of a published project, per type. */
+const LIVE_DEFAULT = { en: 'Live demo', es: 'Demo en vivo' };
+const STATUS_LIVE = {
+  en: { default: 'Live', 'chrome-extension': 'Released' },
+  es: { default: 'Publicado', 'chrome-extension': 'Publicada' },
+};
+/** Demo logins must never be printed on the site: a reserved-.test address or a "password:" line. */
+const CREDENTIALS = [/[\w.+-]+@[\w-]+\.test\b/i, /\b(password|passwd|contraseña)\s*[:=]/i];
 
 /**
  * Wording that would claim experience, clients or social proof that does not
@@ -173,6 +181,21 @@ async function contentChecks() {
     check(textPaths === 1, `${item.slug} placeholder shows the name only, no language-specific label (${textPaths} text line(s))`);
   }
 
+  // A project whose screenshots are in media/ uses them: the cover and every
+  // screenshot are optimised images, and the SVG placeholder is only a fallback.
+  for (const lang of LANGS) {
+    for (const project of lang === 'en' ? PROJECTS : PROJECTS_ES) {
+      if (!(await fs.stat(path.join(ROOT, 'media', 'projects', project.slug)).catch(() => null))) continue;
+      const front = (await fs.readFile(path.join(ROOT, 'src', 'content', 'projects', lang, `${project.slug}.md`), 'utf8')).split(/^---\s*$/m)[1] ?? '';
+      const images = [project.cover, ...[...front.matchAll(/^\s+- src: (\S+)/gm)].map((m) => m[1])];
+      const plain = images.filter((src) => Boolean(resolveImage(src).avif));
+      check(
+        images.length > 1 && plain.length === images.length && project.screenshots === images.length - 1,
+        `${lang}/${project.slug}: cover and ${images.length - 1} screenshot(s) are optimised images from media/ (${images.filter((src) => !resolveImage(src).avif).join(', ') || 'all'})`,
+      );
+    }
+  }
+
   // Optimised images: the variants are used only for the unchanged plain .webp
   // that `npm run images` wrote. A cover replaced by hand (README "Forma rápida")
   // must be served as it is, never hidden behind the old variants.
@@ -290,6 +313,7 @@ async function staticChecks() {
       if (!m[1].startsWith('data:') && !m[1].startsWith('#')) refs.push(m[1]);
     }
     check(!/\shref="#"/.test(text), `${pagePath}: no link points at a bare "#"`);
+    check(!CREDENTIALS.some((re) => re.test(text)), `${pagePath}: no demo login (e-mail or password) is printed`);
 
     for (const ref of refs) {
       if (!ref || ref.startsWith('data:')) continue;
@@ -623,6 +647,8 @@ async function behaviourChecks(browser) {
         stack: document.querySelectorAll('#stack-title ~ ul li').length,
         figures: document.querySelectorAll('#screenshots-title ~ div figure').length,
         live: [...document.querySelectorAll('article header a[target="_blank"]')].map((a) => ({ href: a.getAttribute('href'), rel: a.getAttribute('rel') })),
+        liveText: document.querySelector('article header a.btn-primary')?.textContent?.replace(/\s+/g, ' ').trim() ?? '',
+        status: document.querySelector('article dl > div:last-child dd')?.textContent?.trim() ?? '',
         disabled: document.querySelectorAll('article header .btn-disabled').length,
         pager: [...document.querySelectorAll('nav .pager')].map((a) => a.getAttribute('href')),
         cta: document.querySelector('#cta-title')?.closest('section')?.querySelector('a')?.getAttribute('href'),
@@ -637,6 +663,12 @@ async function behaviourChecks(browser) {
         `${where}: "Live demo" / "Source code" link to ${expectedLinks.join(' and ') || 'nothing yet'}`,
       );
       check(info.disabled === 2 - expectedLinks.length, `${where}: every "#" link shows the disabled "Coming soon" state`);
+      if (project.liveUrl !== '#') {
+        const label = project.liveLabel || LIVE_DEFAULT[lang];
+        check(info.liveText.startsWith(label), `${where}: the live button says "${label}" (got "${info.liveText}")`);
+        const status = STATUS_LIVE[lang][project.type] ?? STATUS_LIVE[lang].default;
+        check(info.status === status, `${where}: status "${status}" (got "${info.status}")`);
+      }
       check(info.personal.includes(PERSONAL[lang]), `${where}: labelled "${PERSONAL[lang]}"`);
       check(info.cta === profile.links.fiverr, `${where}: the call to action goes to Fiverr`);
       const expectedPager = [list[i - 1], list[i + 1]].filter(Boolean).map((p) => `${lang === 'en' ? '' : '/es'}/projects/${p.slug}/`);
