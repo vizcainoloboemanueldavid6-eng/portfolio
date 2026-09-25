@@ -76,22 +76,39 @@ employers, dates, client logos, testimonials, ratings or "trusted by" strips. Th
 `Person` is built from profile.ts only: no `worksFor`, no `alumniOf`, no `aggregateRating`.
 `npm run checks` asserts all of this.
 
-### Real URLs for projects 01 and 02
+### Real URLs for every project
 
-The spec says `liveUrl` and `repoUrl` start as `#` with a TODO, but two of the five projects are
-already deployed and public, and a "Coming soon" button for something that exists would be the
-less honest option:
+The spec says `liveUrl` and `repoUrl` start as `#` with a TODO, but all five projects are now
+published, and a "Coming soon" button for something that exists would be the less honest option:
 
-- Bella Cucina: live at `https://bella-cucina-steel.vercel.app`, source at
+- Bella Cucina: `https://bella-cucina-steel.vercel.app`, source
   `github.com/vizcainoloboemanueldavid6-eng/bella-cucina`.
-- FitCoach Pro: live at `https://fitcoach-pro-mu.vercel.app`, source at
-  `github.com/vizcainoloboemanueldavid6-eng/fitcoach-pro` (public since before this site's first
-  commit; an earlier version of this file wrongly said it did not exist yet).
+- FitCoach Pro: `https://fitcoach-pro-mu.vercel.app`, source `…/fitcoach-pro`.
+- TabZen: the v1.0.0 GitHub release (`…/tabzen/releases/tag/v1.0.0`), source `…/tabzen`.
+- QuickNotes: the v1.0.0 GitHub release (`…/quicknotes/releases/tag/v1.0.0`), source
+  `…/quicknotes`. The release was being published by the main session while this round ran, so the
+  link answered 404 when the site was built; nothing on the site depends on it resolving at build
+  time, and `npm run checks` only checks that the link is there, not the remote page.
+- StockFlow: the public demo `https://stockflow-seven-sage.vercel.app`, source `…/stockflow`.
 
-Each of those four lines still carries the spec's TODO comment, worded as "confirm/keep in sync"
-rather than "add". `https://bella-cucina.vercel.app` (without `-steel`) belongs to somebody else and
-is never used; a check guards against it. TabZen, QuickNotes and StockFlow keep `#` + TODO for both
-links.
+Every one of those lines keeps the spec's TODO comment, worded as "confirm/keep in sync" rather
+than "add" (for the two extensions: "switch to the Chrome Web Store listing once it is
+published"). `https://bella-cucina.vercel.app` (without `-steel`) belongs to somebody else and is
+never used; a check guards against it.
+
+### Extensions link to their release, and the button says "Install (v1.0.0)"
+
+Neither extension is in the Chrome Web Store yet (a store listing needs the owner's developer
+account). What exists is a GitHub release with the zip that loads in Chrome. A button that says
+"Live demo" and opens a download page would promise something else, so a project can set an
+optional, translated `liveLabel`: "Install (v1.0.0)" / "Instalar (v1.0.0)" for both extensions.
+StockFlow, Bella Cucina and FitCoach Pro keep the default "Live demo" / "Demo en vivo", because
+their link really is the running site. The label is text, so it may differ between languages, but
+the build refuses a label set in only one of them. The status line under the title follows the same
+logic: a published Chrome extension is "Released" / "Publicada"; a website or web app is "Live" /
+"Publicado". A version number in the label has to be updated with each release; that is the price
+of saying exactly what the button downloads. When the store listings exist, the owner swaps
+`liveUrl` for the listing and the label for something like "Add to Chrome" (README §1).
 
 ### Project repositories and the example profile name two different people
 
@@ -105,26 +122,49 @@ account as `profile.links.github`", README §1 tells the owner, and `npm run che
 `profile.links.github` is a real profile and a GitHub `repoUrl` belongs to another account (while
 it is still the placeholder, it checks that all GitHub `repoUrl`s at least share one account).
 
-### Projects 03–05 are written from their specifications
+### Projects 03–05 were reconciled with the finished projects
 
-They were being built in parallel, so their case studies were first written from what their specs
-commit to (features, permissions, architecture), without invented metrics. The present tense is only
-kept for claims a file in the sibling repository backs: the fix round re-read the three repositories
-and removed what was not there yet (TabZen's privacy policy and store listing texts) and softened
-what was only partly true (StockFlow's "staff user tries to delete" became "is offered no way to
-delete", which is what its tests check). They get re-checked against the finished projects when
-those are done. The two sibling projects that already shipped quote their own measured Lighthouse
-numbers from their READMEs. Bella Cucina and FitCoach Pro are fictional businesses, and their case
-studies say so. Shared copy does not overstate either: the Work intro says the projects were
-"designed and built end to end" and no longer "from the first sketch to deployment", because three
-of the five are not deployed yet (their pages say "Launching soon").
+Their case studies were first written from what their specs committed to, while the projects were
+still being built. Once TabZen, QuickNotes and StockFlow had passed their own acceptance gates and
+were published, the six Markdown files were rewritten against each project's README and DECISIONS,
+in both languages. What changed, and why:
+
+- **TabZen.** "No network requests" became "no network requests by default": website icons are an
+  opt-in setting because showing a page's icon makes the browser fetch it. "_locales prepared for
+  Spanish" became a Spanish interface, which it has. The Web Store packaging claim became what
+  exists: a v1.0.0 zip on GitHub plus the listing text and screenshots in the repository. The
+  build notes now cover the keyboard-only popup, the suspension rules (a pure, tested function; real
+  discards in a browser test) and the Playwright suite, and Playwright joined the stack.
+- **QuickNotes.** The Shadow DOM is described as closed (page scripts cannot read a note, which an
+  open root would allow), anchoring as quote + context + XPath with a similarity threshold and
+  orphans listed instead of misplaced, and the permission model as it shipped: nothing runs on a
+  site until the user acts there, and automatic restore is an opt-in host permission that is given
+  back when turned off. Playwright joined the stack.
+- **StockFlow.** SQLite joined the stack, because the public demo runs in its zero-config SQLite
+  mode (data that resets on its own) while PostgreSQL stays the default. The case study highlights
+  the server-side role check on every action (re-read from the database), the single conditional
+  update that keeps stock from going negative under concurrency, the integration test that forces
+  that race on real PostgreSQL, and the Playwright test that replays an admin's request with a
+  Staff session.
+
+Nothing claims a number or a feature those READMEs do not state. Test counts were left out on
+purpose: they change with every fix in the sibling repositories, and a stale count would be a false
+claim. Bella Cucina and FitCoach Pro quote the Lighthouse numbers their own READMEs measured.
+
+### StockFlow's demo logins are never printed
+
+StockFlow publishes its demo credentials in its own README, on purpose. This site does not repeat
+them: its sign-in page has a "Try the demo" button, and that is the only way the case study mentions
+the demo accounts. `npm run checks` fails if any built page contains a reserved `.test` address or
+a "password:" line.
 
 ### A `#` link is a disabled "Coming soon" state, not a dead link
 
 When `liveUrl` or `repoUrl` is `#`, the page renders a non-interactive element styled as a
 dashed button with a "Coming soon" tag, and the status reads "Launching soon". It is not an
 `<a href="#">`, so nobody tabs to or clicks a link that goes nowhere; screen readers hear
-"Live demo: coming soon".
+"Live demo: coming soon" (or the project's own `liveLabel`). No project uses it any more, but a new
+one can start that way (README §3).
 
 ### The case-study structure lives in the frontmatter
 
@@ -138,40 +178,58 @@ ignored.
 
 ### Both languages must stay in sync
 
-`src/lib/projects.ts` refuses to build if a project exists in one language but not the other, or
-if `type`, `order`, `cover` or the links differ between translations. The alternative is a
-language switcher that sometimes leads to a 404.
+`src/lib/projects.ts` refuses to build if a project exists in one language but not the other, if
+`type`, `order`, `cover` or the links differ between translations, or if `liveLabel` is set in only
+one of them. The alternative is a language switcher that sometimes leads to a 404, or a button that
+says "Install" in one language and "Live demo" in the other.
 
 ---
 
 ## Images
 
-### Real screenshots for 01 and 02, generated placeholders for 03–05
+### Real screenshots for every project, taken from the projects themselves
 
-The sibling projects ship full-page Playwright screenshots in their `docs/` folders. Those were
-cropped (read-only, nothing in those folders was changed) into 16:10 sources in
-`media/projects/<slug>/`: the desktop hero as the cover, three sections as screenshots, and the
-phone capture composited into a 16:10 frame so every image shares the card's ratio. TabZen,
-QuickNotes and StockFlow get an SVG placeholder (the project name on its own brand colour from
-their specs: `#5B5BD6`, `#F2B705`, `#2563EB`) until real captures exist. Their `screenshots` lists
-are empty, and the Screenshots section only renders when the list has items, so there is no
-"coming soon" gallery. That leaves the spec's "capturas" open for those three pages until their
-projects are finished; see the next section.
+Every source in `media/projects/<slug>/` is a 16:10 image made from captures the sibling projects
+already ship (read-only: nothing in those folders was changed), so the portfolio shows exactly what
+each project shows about itself:
+
+- **Bella Cucina, FitCoach Pro:** their full-page Playwright screenshots in `docs/`, cropped: the
+  desktop hero as the cover, three sections as screenshots, and the phone capture composited into a
+  16:10 frame.
+- **TabZen, QuickNotes:** their Chrome Web Store screenshots (`store-assets/`, 1280×800, already
+  16:10), copied byte for byte. Each project's own `npm run store-assets` drives the real, built
+  extension in the browser (popup, side panel, options, the QuickNotes demo article) and flattens
+  the images to 24-bit, so there was nothing to gain from capturing the same screens a second way.
+  The first image of each is the cover; the other two are the gallery. TabZen's store images put the
+  real popup on an indigo canvas with a headline; that framing is the project's own and is kept.
+- **StockFlow:** its README screenshots (`docs/`, captured signed in as the seeded admin): the top
+  1440×900 of the dashboard (dark theme, the cover), of the products table (light) and of the
+  movements history (dark), so the gallery shows both themes; the low-stock alerts card of the light
+  dashboard on a dark 1440×900 canvas, because that card sits below the fold and a plain crop cut
+  the chart above it in half; and the 390 px phone capture framed like the other two phone images,
+  on a blue glow (StockFlow's `#2563EB`). The gallery has four images, like Bella Cucina's, so the
+  two-column grid has no orphan.
+
+The composites (phone frames, the alerts card) are drawn with sharp by a throwaway script; the
+inputs are the files named above and the output is committed in `media/`, so `npm run images`
+alone rebuilds everything in `public/`. QuickNotes was still getting small i18n and build fixes
+from another session during this round, and its store images were regenerated while this work was
+in progress; the regenerated files are byte-identical (sha256) to the copies in `media/`, and they
+were compared again before the last commit. None of those fixes changes a claim in its case study.
+
+### The SVG placeholders stay, as documented fallbacks
+
+`public/projects/{tabzen,quicknotes,stockflow}/cover.svg` (the project name on its brand colour:
+`#5B5BD6`, `#F2B705`, `#2563EB`) are no longer referenced by any page, but they stay in the
+repository: they are what `npm run placeholders` generates, the README tells the owner they can be
+put back with one line of frontmatter, and a new project starts with one. `npm run checks` still
+compares them with the generator's output.
 
 The placeholders show only the name, which reads the same in both languages. An earlier version
 added an English one-line label ("Inventory management web app"), which then appeared on the
 Spanish pages and Open Graph cards; the spec only asks for "name and colour". `npm run checks`
-compares the committed SVGs with the generator's output and fails if a label comes back.
-
-### Screenshots for projects 03–05 wait for the finished projects
-
-TabZen, QuickNotes and StockFlow were still being built by other sessions during this round (their
-store images were being regenerated minutes apart). Copying screens that are about to change would
-only publish stale captures, so the case studies keep the cover placeholder and no gallery for now.
-When each project is final: extension popup, side panel and options captured with Playwright's
-Chromium and `--load-extension` (branded Chrome ignores that flag), StockFlow through its demo
-account, all at 1440×900, then `npm run images`, `screenshots:` in both languages and the SVG cover
-replaced.
+fails if a label comes back. It also fails if a project that has sources in `media/` shows a cover
+or a screenshot that is not an optimised image, in either language.
 
 ### `npm run images`: sources in `media/`, output in `public/`
 
@@ -186,8 +244,8 @@ The manifest also stores a short sha256 of each plain `.webp`, and the variants 
 the frontmatter names that exact `.webp` and the file is unchanged. Before, the lookup stripped the
 extension, so the README's quick way (overwrite `cover.webp`, or add `cover.png`) silently kept
 showing the old variants on the page while the Open Graph card, which reads the real file, showed
-the new one. Hashing ten files per build costs nothing; comparing modification times would break
-on a fresh clone, where every file has the checkout's time.
+the new one. Hashing twenty-one files per build costs nothing; comparing modification times would
+break on a fresh clone, where every file has the checkout's time.
 
 Covers stay in `public/projects/` as the spec requires, rather than going through
 `astro:assets`, so replacing one is a file operation the README can describe in two lines.
@@ -378,6 +436,10 @@ canonical, `og:url` is left out: it used to say `/404/`, a URL that does not exi
 Netlify's `URL` → the obviously fake `https://mateobuilds.example.com` with a TODO. The
 production address is decided at deploy time, and the fallback can never point at a stranger's
 site. Canonicals, hreflang, Open Graph, the sitemap, robots.txt and the JSON-LD all derive from it.
+Re-checked before the first Vercel deployment: a build with only
+`VERCEL_PROJECT_PRODUCTION_URL=portfolio-test.vercel.app` set (no `SITE_URL`, no `.env`) put
+`https://portfolio-test.vercel.app` in the canonical, robots.txt, the sitemap and the `og:image`
+URLs.
 
 ### `hreflang` everywhere: head and sitemap
 
@@ -450,6 +512,12 @@ defend but harder to trust. Each pass's performance score and main-thread time a
 so a run slowed down by other work on the laptop (other projects were being built at the same
 time) is visible and can simply be repeated. The last HTML report per page and a `summary.json`
 go to `lighthouse/`.
+
+`LH_PASSES=5` replaces the adaptive count with exactly five passes per page, and `LH_URLS` audits a
+comma-separated list of paths instead of the default four pages. The numbers in the README are the
+median of five passes on both home pages, the two default case studies (Bella Cucina in English,
+StockFlow in Spanish) and, through `LH_URLS`, TabZen in English, QuickNotes in Spanish and StockFlow
+in English, so every case study with the new screenshots was measured at least once.
 
 All scripts use ports 4330–4339 (dev 4330, preview 4332, screenshots 4333, checks 4335,
 Lighthouse 4336 with the browser's debugging port on 4339). The server answers a malformed

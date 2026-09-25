@@ -29,8 +29,11 @@ página 404, a 375 y 1440 px.
   4 pasos, tecnologías con iconos, experiencia (solo tus proyectos, marcados como "proyecto
   personal"), 6 preguntas frecuentes y contacto.
 - **Una página por proyecto** (`/projects/<slug>/` y `/es/projects/<slug>/`): portada, problema,
-  solución, funciones, tecnologías, capturas y botones "Live demo" / "Source code". Si un enlace
-  todavía no existe (`#`), el botón aparece desactivado con la etiqueta "Coming soon".
+  solución, funciones, tecnologías, capturas y botones "Live demo" / "Source code". Los cinco
+  proyectos enlazan ya a su versión publicada y a su repositorio; en las dos extensiones de Chrome
+  el botón dice "Install (v1.0.0)" / "Instalar (v1.0.0)" porque lleva a la versión descargable en
+  GitHub, no a una demo. Si un enlace todavía no existe (`#`), el botón aparece desactivado con la
+  etiqueta "Coming soon".
 - **Selector de idioma** que lleva a la misma página en el otro idioma.
 - **Diseño oscuro** con fondo animado suave, tarjetas que se elevan y muestran las tecnologías al
   pasar el ratón, y transiciones entre páginas. Todo el movimiento se desactiva si el visitante
@@ -46,20 +49,24 @@ página 404, a 375 y 1440 px.
 
 ### Resultados medidos
 
-Lighthouse, perfil móvil, sobre la versión de producción servida con compresión (mediana de
-varias pasadas por página, `npm run audit`):
+Lighthouse, perfil móvil, sobre la versión de producción servida con compresión (mediana de cinco
+pasadas por página, `LH_PASSES=5 npm run audit`; las tres últimas filas con `LH_URLS`):
 
-| Página                        | Rendimiento | Accesibilidad | Buenas prácticas | SEO |
-| ----------------------------- | ----------- | ------------- | ---------------- | --- |
-| Inicio (`/`)                  | 99          | 100           | 100              | 100 |
-| Inicio (`/es/`)               | 100         | 100           | 100              | 100 |
-| Caso de estudio (EN, Bella Cucina) | 99     | 100           | 100              | 100 |
-| Caso de estudio (ES, StockFlow)    | 100    | 100           | 100              | 100 |
+| Página                              | Rendimiento | Accesibilidad | Buenas prácticas | SEO |
+| ----------------------------------- | ----------- | ------------- | ---------------- | --- |
+| Inicio (`/`)                        | 100         | 100           | 100              | 100 |
+| Inicio (`/es/`)                     | 100         | 100           | 100              | 100 |
+| Caso de estudio (EN, Bella Cucina)  | 99          | 100           | 100              | 100 |
+| Caso de estudio (ES, StockFlow)     | 100         | 100           | 100              | 100 |
+| Caso de estudio (EN, TabZen)        | 100         | 100           | 100              | 100 |
+| Caso de estudio (ES, QuickNotes)    | 99          | 100           | 100              | 100 |
+| Caso de estudio (EN, StockFlow)     | 100         | 100           | 100              | 100 |
 
-LCP ≈ 1,6–1,9 s, TBT 0–23 ms y CLS 0 en móvil simulado (Lighthouse 13.5 en Google Chrome, mediana
-de todas las pasadas, sin descartar ninguna). En otra máquina los números pueden variar unos
-puntos: el rendimiento depende de lo ocupada que esté la CPU mientras se mide. Los dos casos de
-estudio auditados son el primer proyecto de la cuadrícula (en inglés) y el último (en español).
+LCP ≈ 1,7–2,0 s, TBT 0–36 ms y CLS 0 en móvil simulado (Lighthouse 13.5 en Google Chrome 153,
+mediana de todas las pasadas, sin descartar ninguna). Todos los casos de estudio medidos tienen
+capturas reales. En otra máquina los números pueden variar unos puntos: el rendimiento depende de
+lo ocupada que esté la CPU mientras se mide. Sin opciones, `npm run audit` mide el inicio en los dos
+idiomas, el primer proyecto de la cuadrícula (en inglés) y el último (en español).
 
 ---
 
@@ -87,6 +94,10 @@ Abre <http://localhost:4330>. Los cambios se ven al guardar.
 | `npm run audit`        | Lighthouse móvil sobre 4 páginas; falla si algo baja de 95                      |
 | `npm run shots`        | Capturas de pantalla a 375 y 1440 px en `docs/`                                 |
 | `npm run verify`       | `check` → `build` → `checks` → `audit`, en ese orden                            |
+
+`audit` hace de 3 a 5 pasadas por página según lo que coincidan; `LH_PASSES=5` fija cinco y
+`LH_URLS=/projects/tabzen/,/es/projects/quicknotes/` mide otras páginas (en PowerShell:
+`$env:LH_PASSES=5; npm run audit`).
 
 `checks`, `audit` y `shots` necesitan antes `npm run build`. `checks` y `shots` usan el Chromium de
 Playwright 1.57 (`npx playwright install chromium` la primera vez en un equipo nuevo); `audit`
@@ -125,8 +136,11 @@ Mientras sigan así, el sitio no los publica en los datos estructurados. Pon tus
 por ejemplo `https://www.fiverr.com/tu_usuario` y `https://github.com/tu-usuario`.
 
 **Los enlaces de los proyectos no están en `profile.ts`**, sino en cada Markdown del proyecto
-(`liveUrl` y `repoUrl`, sección 3). Bella Cucina y FitCoach Pro ya apuntan a sus webs publicadas y
-a sus repositorios en tu cuenta real de GitHub (`vizcainoloboemanueldavid6-eng`). Cuando pongas tu
+(`liveUrl` y `repoUrl`, sección 3). Los cinco apuntan ya a lo publicado y a sus repositorios en tu
+cuenta real de GitHub (`vizcainoloboemanueldavid6-eng`): Bella Cucina, FitCoach Pro y StockFlow a
+sus webs en Vercel, y TabZen y QuickNotes a su versión 1.0.0 en GitHub (el zip que se instala en
+Chrome). Cuando las extensiones estén en la Chrome Web Store, cambia su `liveUrl` por la ficha de
+la tienda y su `liveLabel` por algo como "Add to Chrome" / "Añadir a Chrome", en los dos idiomas. Cuando pongas tu
 perfil de GitHub en `links.github`, usa **esa misma cuenta**: `npm run checks` falla si un
 `repoUrl` de GitHub pertenece a otra cuenta distinta de la de tu perfil. Mientras el perfil siga
 siendo el de ejemplo, la sección de contacto muestra `@mateobuilds` y los botones "Source code"
@@ -143,43 +157,50 @@ e iniciales; no hay que editar ninguna imagen.
 
 ## 2. Reemplazar las portadas por capturas reales
 
-Las portadas viven en `public/projects/<proyecto>/`. Bella Cucina y FitCoach Pro ya tienen
-capturas reales; TabZen, QuickNotes y StockFlow tienen una portada provisional (`cover.svg`) hasta
-que pongas las suyas.
+Las portadas viven en `public/projects/<proyecto>/`. Los cinco proyectos tienen ya capturas
+reales, sacadas de las capturas que cada proyecto guarda en su propio repositorio (las de la Chrome
+Web Store en las extensiones y las de `docs/` en StockFlow). Los originales, recortados a 16:10,
+están en `media/projects/`. TabZen, QuickNotes y StockFlow conservan además su portada provisional
+(`cover.svg`) como reserva: si algún día quitas sus capturas, basta con volver a poner
+`cover: /projects/<proyecto>/cover.svg`.
+
+Para cambiar una portada, o poner la de un proyecto nuevo (en el ejemplo, `mi-proyecto`):
 
 **Forma recomendada (con optimización automática):**
 
 1. Haz una captura de la página o de la extensión, idealmente de **1440×900 px** (proporción 16:10).
    En Chrome: DevTools → icono de dispositivo → tamaño 1440×900 → menú ⋮ → *Capture screenshot*.
 2. Guárdala como `media/projects/<proyecto>/cover.png` (o `.jpg`). Por ejemplo
-   `media/projects/tabzen/cover.png`.
+   `media/projects/mi-proyecto/cover.png`. Si ya existía, sustitúyela.
 3. Ejecuta:
 
    ```bash
    npm run images
    ```
 
-   Se crean versiones AVIF y WebP en tres tamaños dentro de `public/projects/tabzen/`, y el sitio
+   Se crean versiones AVIF y WebP en tres tamaños dentro de `public/projects/mi-proyecto/`, y el sitio
    elige la adecuada para cada pantalla.
-4. En **los dos** archivos del proyecto (`src/content/projects/en/tabzen.md` y
-   `src/content/projects/es/tabzen.md`) cambia la portada y su descripción:
+4. En **los dos** archivos del proyecto (`src/content/projects/en/mi-proyecto.md` y
+   `src/content/projects/es/mi-proyecto.md`) cambia la portada y su descripción (`coverAlt` en el
+   idioma de cada archivo):
 
    ```yaml
-   cover: /projects/tabzen/cover.webp
-   coverAlt: The TabZen popup listing open tabs, with the search box at the top
+   cover: /projects/mi-proyecto/cover.webp
+   coverAlt: The booking page on a desktop screen, with the calendar open
    ```
 
-5. Borra el `cover.svg` que ya no se usa.
+5. El `cover.svg` puedes borrarlo o dejarlo como reserva (el sitio solo usa el que nombra
+   `cover:`).
 
 **Capturas adicionales** (la galería de la página del proyecto): guarda más imágenes en la misma
-carpeta de `media/` (por ejemplo `popup.png`, `options.png`), ejecuta `npm run images` y añádelas
+carpeta de `media/` (por ejemplo `calendar.png`, `mobile.png`), ejecuta `npm run images` y añádelas
 en los dos idiomas:
 
 ```yaml
 screenshots:
-  - src: /projects/tabzen/popup.webp
-    alt: The popup with the search box and the list of open tabs
-    caption: Keyboard-first search across every open tab.
+  - src: /projects/mi-proyecto/calendar.webp
+    alt: The calendar view with three bookings on Tuesday
+    caption: Bookings are shown by week, and a click opens one.
 ```
 
 Si un proyecto no tiene `screenshots`, la sección de capturas simplemente no aparece.
@@ -212,6 +233,7 @@ summary: One or two sentences for the card and the meta description (40–200 ch
 type: web-app                               # website | chrome-extension | web-app
 stack: [Next.js, TypeScript, Tailwind CSS]  # los iconos se añaden solos si existen
 liveUrl: '#' # TODO: add the live URL       # URL completa https://…, o '#' = "Coming soon"
+liveLabel: Install (v1.0.0)                 # opcional: texto del botón en vez de "Live demo"
 repoUrl: '#' # TODO: add the repository URL
 cover: /projects/mi-proyecto/cover.svg
 coverAlt: What the cover image shows
@@ -243,6 +265,10 @@ Optional Markdown: appears as "Behind the build" on the project page.
 - `type`, `order`, `cover`, `liveUrl` y `repoUrl` deben ser **iguales en los dos idiomas**. Si
   falta la traducción o no coinciden, `npm run build` se detiene y te dice qué corregir. Lo mismo
   si falta un campo obligatorio o está mal escrito.
+- `liveLabel` es opcional y se traduce (`Install (v1.0.0)` / `Instalar (v1.0.0)`), pero si lo
+  pones en un idioma tienes que ponerlo también en el otro. Úsalo cuando "Live demo" no describa
+  lo que abre el botón, como una extensión que se descarga. En una extensión publicada el estado
+  dice "Released" / "Publicada" en lugar de "Live" / "Publicado".
 - La tarjeta, el filtro, la página del proyecto, su imagen para redes sociales, la sección de
   experiencia y el sitemap se actualizan solos.
 
@@ -363,4 +389,7 @@ Las decisiones técnicas y el porqué de cada una están en [DECISIONS.md](DECIS
 - Tipografías **Space Grotesk** e **Inter** (SIL Open Font License), incluidas con Fontsource.
 - Iconos de tecnologías de **Simple Icons** (CC0). Las marcas pertenecen a sus dueños y se usan
   solo para indicar con qué tecnologías se trabaja.
-- Las capturas de Bella Cucina y FitCoach Pro son de esos mismos proyectos del portafolio.
+- Las capturas de los cinco proyectos salen de esos mismos proyectos del portafolio. Sus datos son
+  de ejemplo: Bella Cucina y FitCoach Pro son negocios ficticios, el artículo de QuickNotes es de
+  una publicación inventada y la tienda de StockFlow está generada, con nombres de producto
+  genéricos y sin marcas reales.
