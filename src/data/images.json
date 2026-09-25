@@ -98,5 +98,115 @@
       1280
     ],
     "hash": "5b5ad6adcb68d01b"
+  },
+  "/projects/quicknotes/all-notes": {
+    "width": 1280,
+    "height": 800,
+    "widths": [
+      640,
+      960,
+      1280
+    ],
+    "hash": "084622af97670133"
+  },
+  "/projects/quicknotes/cover": {
+    "width": 1280,
+    "height": 800,
+    "widths": [
+      640,
+      960,
+      1280
+    ],
+    "hash": "ad949b2fb699ff24"
+  },
+  "/projects/quicknotes/side-panel": {
+    "width": 1280,
+    "height": 800,
+    "widths": [
+      640,
+      960,
+      1280
+    ],
+    "hash": "c8a30bd63fe678d1"
+  },
+  "/projects/stockflow/alerts": {
+    "width": 1280,
+    "height": 800,
+    "widths": [
+      640,
+      960,
+      1280
+    ],
+    "hash": "42af6b7a00cab658"
+  },
+  "/projects/stockflow/cover": {
+    "width": 1280,
+    "height": 800,
+    "widths": [
+      640,
+      960,
+      1280
+    ],
+    "hash": "b89cd04472bbe3a4"
+  },
+  "/projects/stockflow/mobile": {
+    "width": 1280,
+    "height": 800,
+    "widths": [
+      640,
+      960,
+      1280
+    ],
+    "hash": "ab2047fcfed4bdc2"
+  },
+  "/projects/stockflow/movements": {
+    "width": 1280,
+    "height": 800,
+    "widths": [
+      640,
+      960,
+      1280
+    ],
+    "hash": "fb3c0599edbf9c33"
+  },
+  "/projects/stockflow/products": {
+    "width": 1280,
+    "height": 800,
+    "widths": [
+      640,
+      960,
+      1280
+    ],
+    "hash": "3b6ddd72683ec775"
+  },
+  "/projects/tabzen/cover": {
+    "width": 1280,
+    "height": 800,
+    "widths": [
+      640,
+      960,
+      1280
+    ],
+    "hash": "b925728248b693bd"
+  },
+  "/projects/tabzen/options": {
+    "width": 1280,
+    "height": 800,
+    "widths": [
+      640,
+      960,
+      1280
+    ],
+    "hash": "b5cc78e89b38b9d1"
+  },
+  "/projects/tabzen/sessions": {
+    "width": 1280,
+    "height": 800,
+    "widths": [
+      640,
+      960,
+      1280
+    ],
+    "hash": "a7da94ba2401251c"
   }
 }
