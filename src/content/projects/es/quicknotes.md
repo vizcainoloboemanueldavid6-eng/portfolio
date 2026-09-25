@@ -1,42 +1,61 @@
 ---
 title: QuickNotes
 tagline: Extensión de notas y subrayado web
-summary: Subraya texto y pega notas adhesivas en cualquier web. Todo se guarda por página y reaparece al volver, con un panel lateral para buscarlo y exportarlo.
+summary: Subraya texto y pega notas adhesivas en cualquier web, ancladas al propio texto para que vuelvan a su sitio en tu próxima visita, con un panel lateral para buscarlo y exportarlo todo.
 type: chrome-extension
-stack: [Preact, TypeScript, Vite, Tailwind CSS, Chrome Extensions API, Shadow DOM, Vitest]
-liveUrl: '#' # TODO: añade la URL de la Chrome Web Store cuando la extensión esté publicada
-repoUrl: '#' # TODO: añade la URL del repositorio público cuando exista
-cover: /projects/quicknotes/cover.svg
-coverAlt: Portada de QuickNotes con el nombre del proyecto sobre fondo amarillo cálido
+stack: [Preact, TypeScript, Vite, Tailwind CSS, Chrome Extensions API, Shadow DOM, Vitest, Playwright]
+liveUrl: https://github.com/vizcainoloboemanueldavid6-eng/quicknotes/releases/tag/v1.0.0 # TODO: la versión 1.0.0 (zip instalable) — cámbiala por la ficha de la Chrome Web Store cuando esté publicada
+liveLabel: Instalar (v1.0.0)
+repoUrl: https://github.com/vizcainoloboemanueldavid6-eng/quicknotes # TODO: el repositorio de este proyecto — en la misma cuenta de GitHub que profile.links.github
+cover: /projects/quicknotes/cover.webp
+coverAlt: Un artículo de ejemplo con frases subrayadas en amarillo, verde y azul, la barra de colores de QuickNotes sobre una selección y una nota adhesiva amarilla con una lista en el margen
 order: 4
 featured: false
 problem: >-
   La investigación está repartida en decenas de páginas, y las notas sobre ella acaban en otra app
   sin ningún enlace al párrafo que importaba. Los marcadores recuerdan la dirección, pero no lo que
-  subrayaste ni por qué, y un subrayado que desaparece al recargar es peor que ninguno.
+  subrayaste ni por qué, y un subrayado que cae sobre las palabras equivocadas cuando la página cambia
+  es peor que ninguno.
 solution: >-
-  Una extensión Manifest V3 que inyecta una pequeña interfaz en la página dentro de un Shadow DOM,
-  así los estilos de la web no la rompen y ella no rompe la web. Los subrayados se anclan con el
-  texto citado, las palabras de alrededor y una ruta XPath de respaldo, de modo que vuelven a su sitio
-  al recargar aunque la página haya cambiado. Las notas se guardan en chrome.storage.local y nada sale
-  nunca del navegador.
+  Una extensión Manifest V3 que dibuja su barra y sus notas dentro de un Shadow DOM cerrado, así los
+  estilos de la web no pueden romperlas y sus scripts no pueden leerlas. Cada subrayado se guarda con
+  el texto citado, las palabras de alrededor y una ruta XPath de respaldo, de modo que vuelve a su
+  sitio al recargar aunque la página haya cambiado, y lo que no puede colocar lo lista como huérfano
+  en lugar de dibujarlo donde no toca. Por defecto no tiene acceso a ninguna web hasta que la usas en
+  ella; restaurar las notas automáticamente en todas las webs es un permiso opcional que puedes
+  retirar.
 features:
-  - Barra flotante al seleccionar texto con cuatro colores de subrayado y un botón «Add note», también disponible desde el menú contextual
-  - Anclaje robusto que restaura los subrayados al recargar y lista como «orphaned» los que no puede colocar, en lugar de perderlos en silencio
-  - Notas adhesivas que se arrastran, cambian de tamaño y se minimizan, con negrita, cursiva y listas (Ctrl+B y Ctrl+I)
-  - Panel lateral con las notas de la página actual (un clic lleva hasta ellas) y una vista «All notes» con búsqueda de texto completo y filtros por color y dominio
-  - Exporta una página o todo a Markdown o JSON, e importa JSON
-  - Interruptor para pausar la extensión en un sitio, atajo Alt+N para una nota nueva y un content script que se inyecta solo cuando hace falta
+  - Barra al seleccionar texto con cuatro colores de subrayado y «Add note», también en el menú contextual; un clic en un subrayado permite cambiarle el color, añadirle una nota o borrarlo
+  - Notas adhesivas que se arrastran, cambian de tamaño y se minimizan, en cuatro colores de papel, con negrita, cursiva y listas (Ctrl+B y Ctrl+I)
+  - Los subrayados vuelven al recargar aunque el texto de alrededor haya cambiado; las frases repetidas se distinguen por su contexto y las perdidas se listan como huérfanas
+  - Panel lateral con las notas de la página actual (un clic lleva hasta ellas) y una vista «All notes» con búsqueda de texto completo sin distinguir acentos y filtros por color y sitio
+  - Exporta una página o todo a Markdown o JSON; la importación de JSON se valida entera y se fusiona sin borrar nada
+  - Pausa por sitio, atajo Alt+N para una nota nueva, temas claro y oscuro e interfaz en inglés y en español; sin peticiones de red y sin analítica
+screenshots:
+  - src: /projects/quicknotes/side-panel.webp
+    alt: El artículo de ejemplo junto al panel lateral de QuickNotes, que lista por colores los seis subrayados de la página y sus notas
+    caption: El panel lateral lista todo lo de la página; un clic lleva hasta ello y lo hace parpadear.
+  - src: /projects/quicknotes/all-notes.webp
+    alt: El popup de QuickNotes con los contadores de la página y el botón New note, sobre la vista All notes del panel lateral buscando «reading»
+    caption: «All notes» busca en todas las páginas a la vez, con filtros por color y por sitio.
 ---
 
-**Permisos mínimos.** QuickNotes usa `storage`, `activeTab`, `scripting`, `contextMenus` y
-`sidePanel`. El content script se inyecta solo cuando usas la extensión en una página, o en todas si
-lo activas en las opciones, mediante permisos de host opcionales pedidos en tiempo de ejecución.
+**Permisos que siguen al usuario.** QuickNotes pide `storage`, `activeTab`, `scripting`,
+`contextMenus` y `sidePanel`, así que al instalarla Chrome no avisa de que pueda «leer y cambiar todos
+tus datos». Su script solo se ejecuta en la pestaña en la que actúas: el botón de la barra, el menú
+contextual o Alt+N. La opción de restaurar las notas automáticamente en todas las webs pide el acceso
+en tiempo de ejecución, registra el script y devuelve el permiso al desactivarla; si el permiso se
+retira desde Chrome, la opción se apaga sola.
 
-**Aislamiento en ambos sentidos.** La barra y las notas se dibujan con Preact dentro de una raíz
-Shadow DOM, y el proyecto incluye un artículo de demostración para probarlo: los estilos agresivos de
-la página no entran y los de la extensión no salen.
+**Aislamiento en ambos sentidos.** Todo lo que dibuja QuickNotes vive en una única raíz Shadow DOM
+cerrada: el CSS de la página no puede cambiarle el estilo, el suyo no se escapa y los scripts de la
+página no pueden llegar a una nota, ni siquiera una etiqueta de analítica del sitio. El proyecto
+incluye un artículo de demostración con CSS hostil a propósito (reglas `!important` universales,
+barras ocultas, capas con el z-index máximo) para demostrarlo.
 
-**Probado donde es frágil.** La normalización de URLs, el almacenamiento y la serialización de los
-anclajes están cubiertos por tests unitarios con Vitest, porque ahí es donde un fallo haría perder
-en silencio las notas de alguien.
+**Probada donde se podrían perder notas.** Vitest cubre la serialización y la resolución de los
+anclajes (texto cambiado, citas repetidas, espacios, la ruta XPath de respaldo, huérfanos), la
+normalización de URLs, el saneado de HTML, la exportación y la importación. Playwright carga la
+extensión compilada y comprueba los flujos reales: subrayar, notas que vuelven al mismo sitio tras
+recargar, el CSS hostil, el panel lateral, pausar un sitio y retirar el acceso, sin ningún error en
+ningún contexto de la extensión.
